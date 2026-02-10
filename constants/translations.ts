@@ -30,9 +30,9 @@ export const TRANSLATIONS: TranslationDictionary = {
 
   // Home
   'home.title': {
-    [Language.EN]: 'Class of 2024',
-    [Language.ZH_CN]: '2024届 毕业生',
-    [Language.ZH_TW]: '2024屆 畢業生',
+    [Language.EN]: 'Class of 2026',
+    [Language.ZH_CN]: '2026届 毕业生',
+    [Language.ZH_TW]: '2026屆 畢業生',
   },
   'home.subtitle': {
     [Language.EN]: 'Forever Young, Forever Us.',
@@ -68,7 +68,7 @@ export const TRANSLATIONS: TranslationDictionary = {
   },
   'gallery.desc': {
     [Language.EN]: 'Access our shared photo albums. Please keep these links private.',
-    [Language.ZH_CN]: '访问我们的共享相册。请保持这些链接的私密性。',
+    [Language.ZH_CN]: '访问我们的共享相册。请保持這些链接的私密性。',
     [Language.ZH_TW]: '訪問我們的共享相簿。請保持這些連結的私密性。',
   },
   'gallery.upload.title': {
@@ -143,27 +143,6 @@ export const TRANSLATIONS: TranslationDictionary = {
     [Language.ZH_CN]: '发布留言',
     [Language.ZH_TW]: '發佈留言',
   },
-  'guestbook.ai.title': {
-    [Language.EN]: 'Need Inspiration?',
-    [Language.ZH_CN]: '需要灵感？',
-    [Language.ZH_TW]: '需要靈感？',
-  },
-  'guestbook.ai.desc': {
-    [Language.EN]: 'Let Gemini AI help you craft a touching message.',
-    [Language.ZH_CN]: '让 Gemini AI 帮你写一段感人的祝福。',
-    [Language.ZH_TW]: '讓 Gemini AI 幫你寫一段感人的祝福。',
-  },
-  'guestbook.ai.btn': {
-    [Language.EN]: 'Generate Wish',
-    [Language.ZH_CN]: '生成祝福',
-    [Language.ZH_TW]: '生成祝福',
-  },
-  'guestbook.ai.prompt': {
-    [Language.EN]: 'Describe the tone (e.g., funny, nostalgic)...',
-    [Language.ZH_CN]: '描述语气 (例如：幽默，怀旧)...',
-    [Language.ZH_TW]: '描述語氣 (例如：幽默，懷舊)...',
-  },
-
   // Contact
   'contact.title': {
     [Language.EN]: 'Keep in Touch',

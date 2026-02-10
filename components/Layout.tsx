@@ -24,10 +24,15 @@ const Layout: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16 items-center">
             {/* Logo */}
-            <div className="flex-shrink-0 flex items-center gap-2 cursor-pointer" onClick={() => window.location.hash = '#'}>
-              <GraduationCap className="h-8 w-8 text-primary" />
+            <div className="flex-shrink-0 flex items-center gap-3 cursor-pointer" onClick={() => window.location.hash = '#'}>
+              {/* TODO: Replace the src below with your actual attached image URL */}
+              <img 
+                src="https://placehold.co/200x200/1e3a8a/ffffff?text=Logo" 
+                alt="Class Logo" 
+                className="h-10 w-10 rounded-full object-cover border border-gray-200"
+              />
               <span className="font-serif font-bold text-xl text-primary tracking-wide">
-                ClassOf2024
+                ClassOf2026
               </span>
             </div>
 
@@ -116,13 +121,13 @@ const Layout: React.FC = () => {
         <Outlet />
       </main>
 
-      {/* Footer */}   //頁尾字段
+      {/* Footer */}
       <footer className="bg-gray-900 text-gray-400 py-8">
         <div className="max-w-7xl mx-auto px-4 text-center">
           <GraduationCap className="h-8 w-8 mx-auto mb-4 text-gray-600" />
-          <p className="font-serif text-lg text-gray-300 mb-2">Class of 2024</p>
+          <p className="font-serif text-lg text-gray-300 mb-2">Class of 2026</p>
           <p className="text-sm">
-            &copy; {new Date().getFullYear()} Graduation Committee. All rights reserved. 
+            &copy; {new Date().getFullYear()} Graduation Committee. All rights reserved.
           </p>
           <div className="mt-4">
             <NavLink to="/admin" className="text-xs text-gray-600 hover:text-gray-400 flex items-center justify-center gap-1">

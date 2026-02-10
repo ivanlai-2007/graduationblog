@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { GuestbookMessage } from '../types';
-import { generateGraduationWish } from '../services/geminiService';
 import { supabase } from '../services/supabaseClient';
-import { Sparkles, Send, Trash2, Loader2 } from 'lucide-react';
+import { Send, Trash2, Loader2 } from 'lucide-react';
 
 const COLORS = [
   'bg-red-100 text-red-600',
@@ -19,8 +18,6 @@ const Guestbook: React.FC = () => {
   const [messages, setMessages] = useState<GuestbookMessage[]>([]);
   const [name, setName] = useState('');
   const [content, setContent] = useState('');
-  const [aiPrompt, setAiPrompt] = useState('');
-  const [isGenerating, setIsGenerating] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -32,7 +29,6 @@ const Guestbook: React.FC = () => {
   const fetchMessages = async () => {
     try {
       setIsLoading(true);
-      // Changed table to 'messages'
       const { data, error } = await supabase
         .from('messages')
         .select('*')
@@ -56,7 +52,6 @@ const Guestbook: React.FC = () => {
     if (!name.trim() || !content.trim()) return;
 
     try {
-      // Changed table to 'messages', fields to 'name' and 'content'
       const { data, error } = await supabase
         .from('messages')
         .insert([
@@ -77,14 +72,6 @@ const Guestbook: React.FC = () => {
       console.error('Error adding message:', err);
       alert('Failed to post message. Please try again.');
     }
-  };
-
-  const handleAiGenerate = async () => {
-    if (isGenerating) return;
-    setIsGenerating(true);
-    const wish = await generateGraduationWish(aiPrompt, language);
-    setContent(wish);
-    setIsGenerating(false);
   };
 
   const getAvatarColor = (name: string) => {
@@ -134,31 +121,6 @@ const Guestbook: React.FC = () => {
                   <Send size={16} /> {t('guestbook.submit')}
                 </button>
               </form>
-
-              {/* AI Helper */}
-              <div className="mt-8 pt-6 border-t border-gray-100">
-                <div className="flex items-center gap-2 text-secondary mb-2">
-                  <Sparkles size={18} />
-                  <h3 className="font-bold text-sm">{t('guestbook.ai.title')}</h3>
-                </div>
-                <p className="text-xs text-gray-500 mb-3">{t('guestbook.ai.desc')}</p>
-                <div className="flex gap-2">
-                  <input 
-                    type="text" 
-                    value={aiPrompt}
-                    onChange={(e) => setAiPrompt(e.target.value)}
-                    placeholder={t('guestbook.ai.prompt')}
-                    className="flex-1 text-xs px-2 py-1.5 border rounded"
-                  />
-                  <button
-                    onClick={handleAiGenerate}
-                    disabled={isGenerating}
-                    className="bg-secondary text-white text-xs px-3 py-1.5 rounded font-medium hover:bg-amber-600 disabled:opacity-50 transition-colors"
-                  >
-                    {isGenerating ? '...' : 'AI'}
-                  </button>
-                </div>
-              </div>
             </div>
           </div>
 

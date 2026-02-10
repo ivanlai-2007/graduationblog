@@ -20,7 +20,7 @@ const Home: React.FC = () => {
         <div className="relative z-10 h-full flex flex-col justify-center items-center text-center px-4 max-w-4xl mx-auto">
           <div className="animate-fade-in-up">
             <h2 className="text-secondary font-bold tracking-widest uppercase text-sm md:text-base mb-4">
-              Est. 2021 - 2024
+              Est. 2023 - 2026
             </h2>
             <h1 className="font-serif text-5xl md:text-7xl lg:text-8xl text-white font-bold mb-6 leading-tight">
               {t('home.title')}

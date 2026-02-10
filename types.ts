@@ -50,3 +50,16 @@ export interface TranslationDictionary {
     [Language.ZH_TW]: string;
   };
 }
+
+export interface AISettings {
+  provider: 'gemini' | 'openai';
+  apiKey: string;
+  endpoint: string;
+  model: string;
+  systemPrompt: string; // New: Custom persona for the AI
+}
+
+export interface ChatMessage {
+  role: 'user' | 'assistant';
+  content: string;
+}

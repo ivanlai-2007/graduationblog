@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { supabase } from '../services/supabaseClient';
 import { ContactInfo, Memory } from '../types';
+import { fetchSettingValue } from '../services/settingsService';
 import { Trash2, Plus, ShieldCheck, LogOut, Loader2 } from 'lucide-react';
 
 const Admin: React.FC = () => {
@@ -14,18 +15,34 @@ const Admin: React.FC = () => {
   const [contacts, setContacts] = useState<ContactInfo[]>([]);
   const [memories, setMemories] = useState<Memory[]>([]);
   const [loading, setLoading] = useState(false);
+  const [isLoginLoading, setIsLoginLoading] = useState(false);
 
   // Form State
   const [memTitle, setMemTitle] = useState('');
   const [memContent, setMemContent] = useState('');
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (password === 'admin2024') {
-        setIsAuthenticated(true);
-        fetchData();
-    } else {
-        alert('Incorrect Password');
+    setIsLoginLoading(true);
+    
+    try {
+        // Fetch password from cloud
+        const cloudPassword = await fetchSettingValue('admin_password');
+        
+        // Fallback to default if not set in DB yet (to prevent lockout)
+        const validPassword = cloudPassword || 'admin2026';
+
+        if (password === validPassword) {
+            setIsAuthenticated(true);
+            fetchData();
+        } else {
+            alert('Incorrect Password');
+        }
+    } catch (err) {
+        console.error("Login error", err);
+        alert('Login failed. Check connection.');
+    } finally {
+        setIsLoginLoading(false);
     }
   };
 
@@ -38,6 +55,7 @@ const Admin: React.FC = () => {
     
     if (cData.data) setContacts(cData.data);
     if (mData.data) setMemories(mData.data);
+    
     setLoading(false);
   };
 
@@ -82,10 +100,18 @@ const Admin: React.FC = () => {
                     onChange={e => setPassword(e.target.value)}
                     placeholder={t('admin.pass')}
                     className="w-full border p-3 rounded-lg mb-4"
+                    disabled={isLoginLoading}
                   />
-                  <button type="submit" className="w-full bg-primary text-white py-3 rounded-lg font-bold hover:bg-blue-800 transition-colors">
-                      {t('admin.login')}
+                  <button 
+                    type="submit" 
+                    className="w-full bg-primary text-white py-3 rounded-lg font-bold hover:bg-blue-800 transition-colors flex justify-center items-center gap-2"
+                    disabled={isLoginLoading}
+                  >
+                      {isLoginLoading ? <Loader2 className="animate-spin" /> : t('admin.login')}
                   </button>
+                  <p className="text-xs text-center text-gray-400 mt-4">
+                      Password is now verifying against Supabase.
+                  </p>
               </form>
           </div>
       );
@@ -106,7 +132,7 @@ const Admin: React.FC = () => {
 
         <div className="max-w-7xl mx-auto px-4 py-8">
             {/* Tabs */}
-            <div className="flex gap-4 mb-8">
+            <div className="flex flex-wrap gap-4 mb-8">
                 <button 
                     onClick={() => setActiveTab('contacts')}
                     className={`px-6 py-2 rounded-full font-medium transition-colors ${activeTab === 'contacts' ? 'bg-primary text-white' : 'bg-white text-gray-600 hover:bg-gray-200'}`}
@@ -125,6 +151,7 @@ const Admin: React.FC = () => {
                 <div className="text-center py-20"><Loader2 className="animate-spin mx-auto" /></div>
             ) : (
                 <>
+                {/* CONTACTS TAB */}
                 {activeTab === 'contacts' && (
                     <div className="bg-white rounded-xl shadow p-6">
                         <div className="overflow-x-auto">
@@ -156,6 +183,7 @@ const Admin: React.FC = () => {
                     </div>
                 )}
 
+                {/* MEMORIES TAB */}
                 {activeTab === 'memories' && (
                     <div className="grid lg:grid-cols-3 gap-8">
                         {/* List */}
