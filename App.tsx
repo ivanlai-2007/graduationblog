@@ -6,6 +6,9 @@ import Home from './pages/Home';
 import Gallery from './pages/Gallery';
 import Guestbook from './pages/Guestbook';
 import Contact from './pages/Contact';
+import Memories from './pages/Memories';
+import MemoryDetail from './pages/MemoryDetail';
+import Admin from './pages/Admin';
 
 const App: React.FC = () => {
   return (
@@ -17,6 +20,9 @@ const App: React.FC = () => {
             <Route path="gallery" element={<Gallery />} />
             <Route path="guestbook" element={<Guestbook />} />
             <Route path="contact" element={<Contact />} />
+            <Route path="memories" element={<Memories />} />
+            <Route path="memories/:id" element={<MemoryDetail />} />
+            <Route path="admin" element={<Admin />} />
           </Route>
         </Routes>
       </HashRouter>

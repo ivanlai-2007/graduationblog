@@ -1,7 +1,7 @@
 import React from 'react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight, Star, MessageSquare } from 'lucide-react';
+import { ArrowRight, Star, MessageSquare, BookOpen } from 'lucide-react';
 
 const Home: React.FC = () => {
   const { t } = useLanguage();
@@ -42,11 +42,11 @@ const Home: React.FC = () => {
               </button>
               
               <button 
-                onClick={() => navigate('/guestbook')}
+                onClick={() => navigate('/memories')}
                 className="group w-full sm:w-auto bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white border border-white/30 px-8 py-3 rounded-full font-medium transition-all duration-300 flex items-center justify-center gap-2"
               >
-                {t('home.cta.guestbook')}
-                <MessageSquare className="w-4 h-4" />
+                {t('home.cta.memories')}
+                <BookOpen className="w-4 h-4" />
               </button>
             </div>
 

@@ -17,6 +17,11 @@ export const TRANSLATIONS: TranslationDictionary = {
     [Language.ZH_CN]: '留言板',
     [Language.ZH_TW]: '留言板',
   },
+  'nav.memories': {
+    [Language.EN]: 'Memories',
+    [Language.ZH_CN]: '回忆录',
+    [Language.ZH_TW]: '回憶錄',
+  },
   'nav.contact': {
     [Language.EN]: 'Contact',
     [Language.ZH_CN]: '联系方式',
@@ -48,6 +53,11 @@ export const TRANSLATIONS: TranslationDictionary = {
     [Language.EN]: 'Sign Guestbook',
     [Language.ZH_CN]: '签写留言',
     [Language.ZH_TW]: '簽寫留言',
+  },
+  'home.cta.memories': {
+    [Language.EN]: 'Read Memories',
+    [Language.ZH_CN]: '阅读回忆',
+    [Language.ZH_TW]: '閱讀回憶',
   },
 
   // Gallery
@@ -160,19 +170,68 @@ export const TRANSLATIONS: TranslationDictionary = {
     [Language.ZH_CN]: '保持联系',
     [Language.ZH_TW]: '保持聯繫',
   },
-  'contact.role.monitor': {
-    [Language.EN]: 'Class Monitor',
-    [Language.ZH_CN]: '班长',
-    [Language.ZH_TW]: '班長',
+  'contact.add': {
+    [Language.EN]: 'Add Contact Info',
+    [Language.ZH_CN]: '添加联系方式',
+    [Language.ZH_TW]: '添加聯繫方式',
   },
-  'contact.role.teacher': {
-    [Language.EN]: 'Head Teacher',
-    [Language.ZH_CN]: '班主任',
-    [Language.ZH_TW]: '班主任',
+  'contact.role': {
+    [Language.EN]: 'Role',
+    [Language.ZH_CN]: '身份',
+    [Language.ZH_TW]: '身份',
   },
-  'contact.role.org': {
-    [Language.EN]: 'Event Organizer',
-    [Language.ZH_CN]: '活动组织',
-    [Language.ZH_TW]: '活動組織',
+  'contact.email': {
+    [Language.EN]: 'Email',
+    [Language.ZH_CN]: '邮箱',
+    [Language.ZH_TW]: '郵箱',
+  },
+  'contact.social': {
+    [Language.EN]: 'Social (Optional)',
+    [Language.ZH_CN]: '社交账号 (选填)',
+    [Language.ZH_TW]: '社交帳號 (選填)',
+  },
+
+  // Memories
+  'memories.title': {
+    [Language.EN]: 'Class Chronicles',
+    [Language.ZH_CN]: '班级回忆录',
+    [Language.ZH_TW]: '班級回憶錄',
+  },
+  'memories.readMore': {
+    [Language.EN]: 'Read More',
+    [Language.ZH_CN]: '阅读全文',
+    [Language.ZH_TW]: '閱讀全文',
+  },
+
+  // Admin
+  'admin.title': {
+    [Language.EN]: 'Admin Dashboard',
+    [Language.ZH_CN]: '后台管理',
+    [Language.ZH_TW]: '後台管理',
+  },
+  'admin.login': {
+    [Language.EN]: 'Login',
+    [Language.ZH_CN]: '登录',
+    [Language.ZH_TW]: '登錄',
+  },
+  'admin.pass': {
+    [Language.EN]: 'Password',
+    [Language.ZH_CN]: '密码',
+    [Language.ZH_TW]: '密碼',
+  },
+  'admin.tab.contacts': {
+    [Language.EN]: 'Manage Contacts',
+    [Language.ZH_CN]: '管理联系人',
+    [Language.ZH_TW]: '管理聯繫人',
+  },
+  'admin.tab.memories': {
+    [Language.EN]: 'Manage Memories',
+    [Language.ZH_CN]: '管理回忆录',
+    [Language.ZH_TW]: '管理回憶錄',
+  },
+  'admin.addMemory': {
+    [Language.EN]: 'Write New Memory',
+    [Language.ZH_CN]: '撰写新文章',
+    [Language.ZH_TW]: '撰寫新文章',
   },
 };

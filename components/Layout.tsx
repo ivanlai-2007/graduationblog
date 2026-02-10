@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext';
 import { Language, NavItem } from '../types';
-import { Menu, X, Home, Image, MessageSquare, Phone, GraduationCap } from 'lucide-react';
+import { Menu, X, Home, Image, MessageSquare, Phone, GraduationCap, BookOpen, ShieldCheck } from 'lucide-react';
 
 const Layout: React.FC = () => {
   const { language, setLanguage, t } = useLanguage();
@@ -11,6 +11,7 @@ const Layout: React.FC = () => {
 
   const navItems: NavItem[] = [
     { key: 'nav.home', path: '/', icon: Home },
+    { key: 'nav.memories', path: '/memories', icon: BookOpen },
     { key: 'nav.gallery', path: '/gallery', icon: Image },
     { key: 'nav.guestbook', path: '/guestbook', icon: MessageSquare },
     { key: 'nav.contact', path: '/contact', icon: Phone },
@@ -123,6 +124,11 @@ const Layout: React.FC = () => {
           <p className="text-sm">
             &copy; {new Date().getFullYear()} Graduation Committee. All rights reserved.
           </p>
+          <div className="mt-4">
+            <NavLink to="/admin" className="text-xs text-gray-600 hover:text-gray-400 flex items-center justify-center gap-1">
+              <ShieldCheck size={12} /> Admin
+            </NavLink>
+          </div>
         </div>
       </footer>
     </div>

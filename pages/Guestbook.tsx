@@ -3,7 +3,7 @@ import { useLanguage } from '../contexts/LanguageContext';
 import { GuestbookMessage } from '../types';
 import { generateGraduationWish } from '../services/geminiService';
 import { supabase } from '../services/supabaseClient';
-import { Sparkles, Send, Trash2, User, Loader2 } from 'lucide-react';
+import { Sparkles, Send, Trash2, Loader2 } from 'lucide-react';
 
 const COLORS = [
   'bg-red-100 text-red-600',
@@ -32,22 +32,16 @@ const Guestbook: React.FC = () => {
   const fetchMessages = async () => {
     try {
       setIsLoading(true);
+      // Changed table to 'messages'
       const { data, error } = await supabase
-        .from('guestbook_messages')
+        .from('messages')
         .select('*')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
 
       if (data) {
-        const mappedMessages: GuestbookMessage[] = data.map((msg: any) => ({
-          id: msg.id.toString(),
-          author: msg.author,
-          content: msg.content,
-          timestamp: new Date(msg.created_at).getTime(),
-          avatarColor: msg.avatar_color || COLORS[0],
-        }));
-        setMessages(mappedMessages);
+        setMessages(data as GuestbookMessage[]);
       }
     } catch (err: any) {
       console.error('Error fetching messages:', err);
@@ -61,16 +55,14 @@ const Guestbook: React.FC = () => {
     e.preventDefault();
     if (!name.trim() || !content.trim()) return;
 
-    const randomColor = COLORS[Math.floor(Math.random() * COLORS.length)];
-
     try {
+      // Changed table to 'messages', fields to 'name' and 'content'
       const { data, error } = await supabase
-        .from('guestbook_messages')
+        .from('messages')
         .insert([
           {
-            author: name,
+            name: name,
             content: content,
-            avatar_color: randomColor,
           },
         ])
         .select();
@@ -78,14 +70,7 @@ const Guestbook: React.FC = () => {
       if (error) throw error;
 
       if (data && data[0]) {
-        const newMessage: GuestbookMessage = {
-          id: data[0].id.toString(),
-          author: data[0].author,
-          content: data[0].content,
-          timestamp: new Date(data[0].created_at).getTime(),
-          avatarColor: data[0].avatar_color,
-        };
-        setMessages([newMessage, ...messages]);
+        setMessages([data[0], ...messages]);
         setContent('');
       }
     } catch (err: any) {
@@ -102,23 +87,13 @@ const Guestbook: React.FC = () => {
     setIsGenerating(false);
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this message?')) return;
-
-    try {
-      const { error } = await supabase
-        .from('guestbook_messages')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
-
-      setMessages(messages.filter((m) => m.id !== id));
-    } catch (err: any) {
-      console.error('Error deleting message:', err);
-      alert('Failed to delete message.');
-    }
-  };
+  const getAvatarColor = (name: string) => {
+      let hash = 0;
+      for (let i = 0; i < name.length; i++) {
+          hash = name.charCodeAt(i) + ((hash << 5) - hash);
+      }
+      return COLORS[Math.abs(hash) % COLORS.length];
+  }
 
   return (
     <div className="bg-gray-50 min-h-screen py-12">
@@ -205,26 +180,19 @@ const Guestbook: React.FC = () => {
               messages.map((msg) => (
                 <div key={msg.id} className="bg-white p-5 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow relative group">
                   <div className="flex items-start gap-4">
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg shrink-0 ${msg.avatarColor}`}>
-                      {msg.author.charAt(0).toUpperCase()}
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg shrink-0 ${getAvatarColor(msg.name)}`}>
+                      {msg.name.charAt(0).toUpperCase()}
                     </div>
                     <div className="flex-1">
                       <div className="flex justify-between items-baseline mb-1">
-                        <h3 className="font-bold text-gray-900">{msg.author}</h3>
+                        <h3 className="font-bold text-gray-900">{msg.name}</h3>
                         <span className="text-xs text-gray-400">
-                          {new Date(msg.timestamp).toLocaleDateString()}
+                          {new Date(msg.created_at).toLocaleDateString()}
                         </span>
                       </div>
                       <p className="text-gray-700 whitespace-pre-wrap font-serif leading-relaxed">{msg.content}</p>
                     </div>
                   </div>
-                  <button 
-                    onClick={() => handleDelete(msg.id)}
-                    className="absolute top-2 right-2 text-gray-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all p-1"
-                    title="Delete message"
-                  >
-                    <Trash2 size={14} />
-                  </button>
                 </div>
               ))
             )}

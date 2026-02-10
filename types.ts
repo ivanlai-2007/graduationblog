@@ -20,18 +20,27 @@ export interface PhotoAlbum {
 }
 
 export interface GuestbookMessage {
-  id: string;
-  author: string;
+  id: number;
+  name: string;
   content: string;
-  timestamp: number;
-  avatarColor: string;
+  created_at: string;
 }
 
 export interface ContactInfo {
+  id?: number;
   name: string;
-  roleKey: string;
+  role: string;
   email?: string;
   social?: string;
+  created_at?: string;
+}
+
+export interface Memory {
+  id: number;
+  title: string;
+  content: string; // Markdown
+  created_at: string;
+  author?: string;
 }
 
 export interface TranslationDictionary {
