@@ -1,3 +1,4 @@
+//develpoing 2026_2_10
 import React, { useState, useRef, useEffect } from 'react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { askOracle } from '../services/aiService';

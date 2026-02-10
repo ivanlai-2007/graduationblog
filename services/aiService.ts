@@ -1,3 +1,4 @@
+//developinng 2026_2_10
 import { GoogleGenAI } from "@google/genai";
 import { fetchAISettings } from "./settingsService";
 

@@ -1,3 +1,4 @@
+//developed by Ivan_Lai with google AIstudio 
 import React, { useState } from 'react';
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -141,3 +142,14 @@ const Layout: React.FC = () => {
 };
 
 export default Layout;
+/*
+  #####   ######   ######     ##     ##  ##            ######    ####    ######   #####     #####
+ ##   ##  # ## #    ##  ##   ####    ##  ##             ##  ##    ##      ##  ##   ## ##   ##   ##
+ #          ##      ##  ##  ##  ##   ##  ##             ##  ##    ##      ##  ##   ##  ##  #
+  #####     ##      #####   ##  ##    ####              #####     ##      #####    ##  ##   #####
+      ##    ##      ## ##   ######     ##               ##  ##    ##      ## ##    ##  ##       ##
+ ##   ##    ##      ##  ##  ##  ##     ##               ##  ##    ##      ##  ##   ## ##   ##   ##
+  #####    ####    #### ##  ##  ##    ####             ######    ####    #### ##  #####     #####
+
+
+*/
