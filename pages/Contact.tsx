@@ -126,12 +126,12 @@ const Contact: React.FC = () => {
                         <input required type="text" value={newRole} onChange={e => setNewRole(e.target.value)} className="w-full border rounded p-2" />
                     </div>
                     <div>
-                        <label className="block text-xs font-bold text-gray-500 uppercase mb-1">{t('contact.email')}</label>
-                        <input type="email" value={newEmail} onChange={e => setNewEmail(e.target.value)} className="w-full border rounded p-2" />
+                        <label className="block text-xs font-bold text-gray-500 uppercase mb-1">{t('contact.social')}</label>
+                        <input type="text" value={newEmail} onChange={e => setNewEmail(e.target.value)} className="w-full border rounded p-2" />
                     </div>
                     <div>
-                        <label className="block text-xs font-bold text-gray-500 uppercase mb-1">{t('contact.social')}</label>
-                        <input type="text" value={newSocial} onChange={e => setNewSocial(e.target.value)} className="w-full border rounded p-2" />
+                        <label className="block text-xs font-bold text-gray-500 uppercase mb-1">{t('contact.email')}</label>
+                        <input type="email" value={newSocial} onChange={e => setNewSocial(e.target.value)} className="w-full border rounded p-2" />
                     </div>
                     <button type="submit" className="w-full bg-primary text-white py-2 rounded font-bold hover:bg-blue-800 transition-colors">
                         Save Contact

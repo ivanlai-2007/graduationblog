@@ -159,19 +159,23 @@ export const TRANSLATIONS: TranslationDictionary = {
     [Language.ZH_CN]: '身份',
     [Language.ZH_TW]: '身份',
   },
-  'contact.email': {  // 這裏原本是email，國內用的較多是微信或QQ號，為不動底層改i18n字庫
-    /*[Language.EN]: 'E-mail (Optional)',
-    [Language.ZH_CN]: 'E-mail(选填)',*/
-    [Language.EN]: 'Wechat/QQ',
-    [Language.ZH_CN]: '微信/QQ',
-    [Language.ZH_TW]: '微信/QQ',
-  },
-  'contact.social': { //此處同上
-    /*[Language.EN]: 'Social Media (Optional)',
-    [Language.ZH_CN]: '社交账号(选填)',*/
+  'contact.email': {  // 已經修改此處
     [Language.EN]: 'E-mail (Optional)',
     [Language.ZH_CN]: 'E-mail(选填)',
     [Language.ZH_TW]: 'E-mail (選填)',
+    /*
+    [Language.EN]: 'Wechat/QQ',
+    [Language.ZH_CN]: '微信/QQ',
+    [Language.ZH_TW]: '微信/QQ',*/
+  },
+  'contact.social': { //此處同上
+    [Language.EN]: 'Wechat/QQ',
+    [Language.ZH_CN]: '微信/QQ',
+    [Language.ZH_TW]: '微信/QQ',
+    /*
+    [Language.EN]: 'E-mail (Optional)',
+    [Language.ZH_CN]: 'E-mail(选填)',
+    [Language.ZH_TW]: 'E-mail (選填)',*/
   },
 
   // Memories
