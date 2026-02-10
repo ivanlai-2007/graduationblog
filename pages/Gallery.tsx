@@ -20,8 +20,8 @@ const Gallery: React.FC = () => {
       titleKey: 'album.sports',
       descriptionKey: 'album.sports.desc',
       coverImage: 'https://picsum.photos/600/400?random=2',
-      link: 'https://www.dropbox.com',
-      platform: 'Dropbox'
+      link: 'https://1drv.ms/f/c/3e1d9ee25a5a5c48/IgBF9bd5NVTwQ5zQ5SpeyMsXAdrq40_7idbryVSaNE0NdpA?e=lNhK9R',
+      platform: 'OneDrive'
     },
     {
       id: '3',

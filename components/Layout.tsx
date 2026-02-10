@@ -116,13 +116,13 @@ const Layout: React.FC = () => {
         <Outlet />
       </main>
 
-      {/* Footer */}
+      {/* Footer */}   //頁尾字段
       <footer className="bg-gray-900 text-gray-400 py-8">
         <div className="max-w-7xl mx-auto px-4 text-center">
           <GraduationCap className="h-8 w-8 mx-auto mb-4 text-gray-600" />
           <p className="font-serif text-lg text-gray-300 mb-2">Class of 2024</p>
           <p className="text-sm">
-            &copy; {new Date().getFullYear()} Graduation Committee. All rights reserved.
+            &copy; {new Date().getFullYear()} Graduation Committee. All rights reserved. 
           </p>
           <div className="mt-4">
             <NavLink to="/admin" className="text-xs text-gray-600 hover:text-gray-400 flex items-center justify-center gap-1">
