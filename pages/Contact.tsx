@@ -91,15 +91,15 @@ const Contact: React.FC = () => {
                 </span>
                 
                 <div className="space-y-2 w-full">
-                    {contact.email && (
-                    <a href={`mailto:${contact.email}`} className="flex items-center justify-center gap-2 text-gray-600 hover:text-primary transition-colors text-sm bg-white py-2 rounded border border-gray-200">
-                        <Mail size={14} /> {contact.email}
-                    </a>
-                    )}
                     {contact.social && (
                     <div className="flex items-center justify-center gap-2 text-gray-600 text-sm bg-white py-2 rounded border border-gray-200">
                         <Twitter size={14} /> {contact.social}
                     </div>
+                    )}
+                    {contact.email && (
+                    <a href={`mailto:${contact.email}`} className="flex items-center justify-center gap-2 text-gray-600 hover:text-primary transition-colors text-sm bg-white py-2 rounded border border-gray-200">
+                        <Mail size={14} /> {contact.email}
+                    </a>
                     )}
                 </div>
                 </div>
