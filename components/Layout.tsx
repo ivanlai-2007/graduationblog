@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext';
 import { Language, NavItem } from '../types';
-import { Menu, X, Home, Image, MessageSquare, Phone, GraduationCap, BookOpen, ShieldCheck } from 'lucide-react';
+import { Menu, X, Home, Image, MessageSquare, Phone, GraduationCap, BookOpen, ShieldCheck, Github, Twitter } from 'lucide-react';
 
 const Layout: React.FC = () => {
   const { language, setLanguage, t } = useLanguage();
@@ -127,9 +127,17 @@ const Layout: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 text-center">
           <GraduationCap className="h-8 w-8 mx-auto mb-4 text-gray-600" />
           <p className="font-serif text-lg text-gray-300 mb-2">Class of 2026</p>
-          <p className="text-sm">
+            <p className="text-sm">
             &copy; {new Date().getFullYear()} Graduation Committee. All rights reserved.
-          </p>
+            <a 
+              href="https://github.com/ivanlai-2007/graduationblog" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-gray-300 hover:text-white transition-colors inline-flex items-center gap-1 ml-2"
+            >
+              <Github size={12} /> Star it!
+            </a>
+            </p>
           <div className="mt-4">
             <NavLink to="/admin" className="text-xs text-gray-600 hover:text-gray-400 flex items-center justify-center gap-1">
               <ShieldCheck size={12} /> Admin
