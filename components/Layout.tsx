@@ -28,7 +28,7 @@ const Layout: React.FC = () => {
             <div className="flex-shrink-0 flex items-center gap-3 cursor-pointer" onClick={() => window.location.hash = '#'}>
               {/* TODO: Replace the src below with your actual attached image URL */}
               <img 
-                src="https://placehold.co/200x200/1e3a8a/ffffff?text=Logo" 
+                src="https://i.ibb.co/4gKDZF7M/Pix-Pin-2026-02-10-19-13-24.png" 
                 alt="Class Logo" 
                 className="h-10 w-10 rounded-full object-cover border border-gray-200"
               />
