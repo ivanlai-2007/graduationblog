@@ -33,7 +33,7 @@ const Layout: React.FC = () => {
                 className="h-16 w-16 rounded-full object-cover border"
               />
               <span className="font-serif font-bold text-xl tracking-wide">
-               Time. Photography Club
+               Time. Photography
               </span>
             </div>
 

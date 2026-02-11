@@ -26,4 +26,4 @@ env.local
 *.njsproj
 *.sln
 *.sw?
-
+test.tsx
