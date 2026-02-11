@@ -28,11 +28,11 @@ const Layout: React.FC = () => {
             <div className="flex-shrink-0 flex items-center gap-3 cursor-pointer" onClick={() => window.location.hash = '#'}>
               {/* TODO: Replace the src below with your actual attached image URL */}
               <img 
-                src="/assets/favicon-512x512.png" 
-                alt="Class Logo" 
-                className="h-10 w-10 rounded-full object-cover border border-gray-200"
+                src="https://i.ibb.co/67nMmgx9/20241027130925.png" 
+                alt="Club Logo" 
+                className="h-16 w-16 rounded-full object-cover border"
               />
-              <span className="font-serif font-bold text-xl text-primary tracking-wide">
+              <span className="font-serif font-bold text-xl tracking-wide">
                Time. Photography Club
               </span>
             </div>

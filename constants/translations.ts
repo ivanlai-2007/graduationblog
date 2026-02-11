@@ -30,7 +30,7 @@ export const TRANSLATIONS: TranslationDictionary = {
 
   // Home
   'home.title': {
-    [Language.EN]: 'Class of 2026',
+    [Language.EN]: 'Time. Photography Club',
     [Language.ZH_CN]: '時光攝影社',
     [Language.ZH_TW]: '時光攝影社',
   },
