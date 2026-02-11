@@ -3,12 +3,16 @@ import { useLanguage } from '../contexts/LanguageContext';
 import { ContactInfo } from '../types';
 import { supabase } from '../services/supabaseClient';
 import { Mail, Github, Twitter, UserCircle, Plus, X } from 'lucide-react';
+import { Turnstile } from '@marsidev/react-turnstile';
+
 
 const Contact: React.FC = () => {
   const { t } = useLanguage();
   const [contacts, setContacts] = useState<ContactInfo[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const [isVerifying, setIsVerifying] = useState(false);
   
   // Form State
   const [newName, setNewName] = useState('');
@@ -31,6 +35,11 @@ const Contact: React.FC = () => {
 
   const handleAddContact = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!turnstileToken) {
+        alert('請先完成安全驗證');
+        return;
+    }
+
     if (!newName || !newRole) return;
 
     const { data, error } = await supabase.from('contacts').insert([{
@@ -38,15 +47,18 @@ const Contact: React.FC = () => {
         role: newRole,
         email: newEmail,
         social: newSocial
+        // 需要將 token 傳給後端進行二度驗證(developing)
     }]).select();
 
     if (data) {
         setContacts([...contacts, data[0] as ContactInfo]);
         setShowModal(false);
         setNewName(''); setNewRole(''); setNewEmail(''); setNewSocial('');
+        setTurnstileToken(null); // 提交後重置 Token
     } else {
         alert('Failed to add contact');
     }
+    setIsLoading(false);
   };
 
   return (
@@ -108,7 +120,6 @@ const Contact: React.FC = () => {
         )}
       </div>
 
-      {/* Add Contact Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
             <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6 relative animate-fade-in-up">
@@ -133,9 +144,28 @@ const Contact: React.FC = () => {
                         <label className="block text-xs font-bold text-gray-500 uppercase mb-1">{t('contact.email')}</label>
                         <input type="email" value={newEmail} onChange={e => setNewEmail(e.target.value)} className="w-full border rounded p-2" />
                     </div>
-                    <button type="submit" className="w-full bg-primary text-white py-2 rounded font-bold hover:bg-blue-800 transition-colors">
-                        Save Contact
+
+                    <div className="my-4 flex justify-center">
+                    <Turnstile 
+                        siteKey="0x4AAAAAACaXdAvIDhYzaJd3" 
+                        onSuccess={(token) => setTurnstileToken(token)}
+                        onExpire={() => setTurnstileToken(null)}
+                        onError={() => setTurnstileToken(null)}
+                    />
+                    </div>
+
+                    <button 
+                        type="submit" 
+                        disabled={!turnstileToken || isLoading} // 若未驗證或載入中則禁用
+                        className={`w-full py-2 rounded font-bold transition-colors ${
+                            !turnstileToken || isLoading 
+                            ? 'bg-gray-300 cursor-not-allowed' 
+                            : 'bg-primary text-white hover:bg-blue-800'
+                        }`}
+                    >
+                        {isLoading ? 'Saving...' : 'Save Contact'}
                     </button>
+                      
                 </form>
             </div>
         </div>

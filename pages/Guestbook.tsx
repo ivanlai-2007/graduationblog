@@ -3,6 +3,7 @@ import { useLanguage } from '../contexts/LanguageContext';
 import { GuestbookMessage } from '../types';
 import { supabase } from '../services/supabaseClient';
 import { Send, Trash2, Loader2 } from 'lucide-react';
+import { Turnstile } from '@marsidev/react-turnstile';
 
 const COLORS = [
   'bg-red-100 text-red-600',
@@ -20,6 +21,8 @@ const Guestbook: React.FC = () => {
   const [content, setContent] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const [isVerifying, setIsVerifying] = useState(false);
 
   // Load messages from Supabase
   useEffect(() => {
@@ -49,6 +52,12 @@ const Guestbook: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!turnstileToken) {
+        alert('請先完成安全驗證');
+        return;
+    }
+
     if (!name.trim() || !content.trim()) return;
 
     try {
@@ -67,11 +76,13 @@ const Guestbook: React.FC = () => {
       if (data && data[0]) {
         setMessages([data[0], ...messages]);
         setContent('');
+        setTurnstileToken(null); // 同contact頁面，提交後重置 Token
       }
     } catch (err: any) {
       console.error('Error adding message:', err);
       alert('Failed to post message. Please try again.');
     }
+    setIsLoading(false);
   };
 
   const getAvatarColor = (name: string) => {
@@ -84,7 +95,7 @@ const Guestbook: React.FC = () => {
 
   return (
     <div className="bg-gray-50 min-h-screen py-12">
-      <div className="max-w-4xl mx-auto px-4">
+      <div className="max-w-7xl mx-auto px-7">
         <h1 className="font-serif text-4xl font-bold text-center mb-10 text-gray-900">{t('guestbook.title')}</h1>
 
         <div className="grid md:grid-cols-3 gap-8">
@@ -114,12 +125,28 @@ const Guestbook: React.FC = () => {
                     required
                   />
                 </div>
-                <button
-                  type="submit"
-                  className="w-full bg-primary text-white py-2 rounded-lg font-medium hover:bg-blue-800 transition-colors flex justify-center items-center gap-2 shadow-lg shadow-primary/20"
-                >
-                  <Send size={16} /> {t('guestbook.submit')}
-                </button>
+                    <form onSubmit={handleSubmit} className="space-y-4">
+                    {/* 在提交按鈕上方加入驗證框 */}
+                    <div className="flex justify-center py-2">
+                      <Turnstile 
+                        siteKey="0x4AAAAAACaXdAvIDhYzaJd3" 
+                        onSuccess={(token) => setTurnstileToken(token)}
+                        onExpire={() => setTurnstileToken(null)}
+                        onError={() => setTurnstileToken(null)}
+                        data-size="compact"
+                      />
+                    </div>
+
+                    <button
+                      type="submit"
+                      disabled={!turnstileToken}
+                      className={`w-full text-white py-2 rounded-lg font-medium transition-colors flex justify-center items-center gap-2 shadow-lg ${
+                        !turnstileToken ? 'bg-gray-400 cursor-not-allowed' : 'bg-primary hover:bg-blue-800 shadow-primary/20'
+                      }`}
+                    >
+                      <Send size={16} /> {t('guestbook.submit')}
+                    </button>
+                  </form>
               </form>
             </div>
           </div>

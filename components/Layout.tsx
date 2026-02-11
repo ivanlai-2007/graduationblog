@@ -134,7 +134,7 @@ const Layout: React.FC = () => {
               target="_blank" 
               rel="noopener noreferrer"
               className="text-gray-300 hover:text-white transition-colors inline-flex items-center gap-1 ml-2"
-            >
+            > 
               <Github size={12} /> Star it!
             </a>
             </p>
