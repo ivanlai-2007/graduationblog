@@ -23,21 +23,21 @@ export const TRANSLATIONS: TranslationDictionary = {
     [Language.ZH_TW]: '回憶錄',
   },
   'nav.contact': {
-    [Language.EN]: 'Contact',
-    [Language.ZH_CN]: '联系方式',
-    [Language.ZH_TW]: '聯繫方式',
+    [Language.EN]: 'Members',
+    [Language.ZH_CN]: '成员',
+    [Language.ZH_TW]: '成員',
   },
 
   // Home
   'home.title': {
     [Language.EN]: 'Class of 2026',
-    [Language.ZH_CN]: '2026届 毕业生',
-    [Language.ZH_TW]: '2026屆 畢業生',
+    [Language.ZH_CN]: '時光攝影社',
+    [Language.ZH_TW]: '時光攝影社',
   },
   'home.subtitle': {
-    [Language.EN]: 'Forever Young, Forever Us.',
-    [Language.ZH_CN]: '青春不散场，我们顶峰相见。',
-    [Language.ZH_TW]: '青春不散場，我們頂峰相見。',
+    [Language.EN]: 'Let life be beautiful like summer flowers and death like autumn leaves.',
+    [Language.ZH_CN]: '生如夏花之绚烂，死如秋叶之静美',
+    [Language.ZH_TW]: '生如夏花之絢爛，死如秋葉之靜美',
   },
   'home.welcome': {
     [Language.EN]: 'Welcome to our digital memory capsule.',
@@ -78,8 +78,8 @@ export const TRANSLATIONS: TranslationDictionary = {
   },
   'gallery.upload.desc': {
     [Language.EN]: 'Do you have photos to share? Upload them to our shared collection via the link below.',
-    [Language.ZH_CN]: '你有照片想要分享吗？通过下方链接上传到我们的班级收藏中。',
-    [Language.ZH_TW]: '你有照片想要分享嗎？通過下方連結上傳到我們的班級收藏中。',
+    [Language.ZH_CN]: '你有照片想要分享吗？通过下方链接上传到我们的社团收藏中。',
+    [Language.ZH_TW]: '你有照片想要分享嗎？通過下方連結上傳到我們的社團收藏中。',
   },
   'gallery.upload.linkText': {
     [Language.EN]: 'Go to Upload Page (External)',
@@ -125,8 +125,8 @@ export const TRANSLATIONS: TranslationDictionary = {
   // Guestbook
   'guestbook.title': {
     [Language.EN]: 'Leave a Message',
-    [Language.ZH_CN]: '留下寄语',
-    [Language.ZH_TW]: '留下寄語',
+    [Language.ZH_CN]: '留下想法',
+    [Language.ZH_TW]: '留下想法',
   },
   'guestbook.input.name': {
     [Language.EN]: 'Your Name',
@@ -135,24 +135,24 @@ export const TRANSLATIONS: TranslationDictionary = {
   },
   'guestbook.input.msg': {
     [Language.EN]: 'Your Message...',
-    [Language.ZH_CN]: '写下你的祝福...',
-    [Language.ZH_TW]: '寫下你的祝福...',
+    [Language.ZH_CN]: '写下你的想法...',
+    [Language.ZH_TW]: '寫下你的想法...',
   },
   'guestbook.submit': {
     [Language.EN]: 'Post Message',
-    [Language.ZH_CN]: '发布留言',
-    [Language.ZH_TW]: '發佈留言',
+    [Language.ZH_CN]: '发布想法',
+    [Language.ZH_TW]: '發佈想法',
   },
   // Contact
   'contact.title': {
-    [Language.EN]: 'Keep in Touch',
-    [Language.ZH_CN]: '保持联系',
-    [Language.ZH_TW]: '保持聯繫',
+    [Language.EN]: 'Members',
+    [Language.ZH_CN]: '社团成员',
+    [Language.ZH_TW]: '社團成員',
   },
   'contact.add': {
-    [Language.EN]: 'Add Contact Info',
-    [Language.ZH_CN]: '添加联系方式',
-    [Language.ZH_TW]: '添加聯繫方式',
+    [Language.EN]: 'Add Your Contact Info',
+    [Language.ZH_CN]: '添加你的联系方式',
+    [Language.ZH_TW]: '添加你的聯繫方式',
   },
   'contact.role': {
     [Language.EN]: 'Role',
@@ -180,9 +180,9 @@ export const TRANSLATIONS: TranslationDictionary = {
 
   // Memories
   'memories.title': {
-    [Language.EN]: 'Class Chronicles',
-    [Language.ZH_CN]: '班级回忆录',
-    [Language.ZH_TW]: '班級回憶錄',
+    [Language.EN]: 'Time we shared',
+    [Language.ZH_CN]: '时光回忆录',
+    [Language.ZH_TW]: '時光回憶錄',
   },
   'memories.readMore': {
     [Language.EN]: 'Read More',

@@ -12,7 +12,7 @@ const Contact: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
-  const [isVerifying, setIsVerifying] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false); //api验证(unfinished)
   
   // Form State
   const [newName, setNewName] = useState('');
