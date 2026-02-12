@@ -89,31 +89,44 @@ const Contact: React.FC = () => {
 
   const handleAddContact = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // 基本攔截
     if (!turnstileToken) {
         alert('請先完成安全驗證');
         return;
     }
+    if (!newName || !newRole || isForbiddenRole) return;
+    setIsLoading(true);
+    try {
+        //Edge Function
+        const { data, error } = await supabase.functions.invoke('add-contact', {
+            body: {
+                name: newName,
+                role: newRole,
+                email: newEmail,
+                social: newSocial,
+                turnstileToken: turnstileToken
+            }
+        });
 
-    if (!newName || !newRole) return;
+        if (error) throw error;
 
-    const { data, error } = await supabase.from('contacts').insert([{
-        name: newName,
-        role: newRole,
-        email: newEmail,
-        social: newSocial
-    }]).select();
-
-    if (data) {
+        // 成功後的處理
         setContacts([...contacts, data[0] as ContactInfo]);
         setShowModal(false);
         setNewName(''); setNewRole(''); setNewEmail(''); setNewSocial('');
         setTurnstileToken(null);
-    } else {
-        alert('Failed to add contact');
+        alert('添加成功！');
+    } catch (err) {
+        console.error(err);
+        alert('驗證或保存失敗，請檢查網絡或稍後再試');
+    } finally {
+        setIsLoading(false);
     }
-    setIsLoading(false);
-  };
+};
 
+const isForbiddenRole = newRole === '2026届社员' || newRole === '2026届社长';//驗證輸入合法性
+const isSubmitDisabled = !turnstileToken || isLoading || isForbiddenRole;
   return (
     <div className="bg-white min-h-screen py-12 relative">
       <div className="max-w-5xl mx-auto px-4">
@@ -249,23 +262,26 @@ const Contact: React.FC = () => {
 
                     <div className="my-4 flex justify-center">
                     <Turnstile 
-                        siteKey="0x4AAAAAACaXdAvIDhYzaJd3" 
+                        siteKey="1x00000000000000000000AA" //test key!!!!!
                         onSuccess={(token) => setTurnstileToken(token)}
                         onExpire={() => setTurnstileToken(null)}
                         onError={() => setTurnstileToken(null)}
                     />
                     </div>
-
                     <button 
                         type="submit" 
-                        disabled={!turnstileToken || isLoading} 
+                        // 1. 使用 disabled 屬性從根本禁用點擊
+                        disabled={isSubmitDisabled} 
                         className={`w-full py-2 rounded font-bold transition-colors ${
-                            !turnstileToken || isLoading 
-                            ? 'bg-gray-300 cursor-not-allowed' 
-                            : 'bg-primary text-white hover:bg-blue-800'
+                            isSubmitDisabled
+                            ? 'bg-gray-300 cursor-not-allowed text-gray-500' // 禁用時的樣式
+                            : 'bg-primary text-white hover:bg-blue-800'     // 啟用時的樣式
                         }`}
                     >
-                        {isLoading ? 'Saving...' : 'Save Contact'}
+                        {isLoading ? 'Saving...' : 
+                        isForbiddenRole ? '暫不支持導入 26 屆成員，請稍後再試' : 
+                        'Save Contact'
+                        }
                     </button>
                 </form>
             </div>
