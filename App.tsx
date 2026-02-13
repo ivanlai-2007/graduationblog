@@ -1,5 +1,6 @@
 import React from 'react';
 import { HashRouter, Routes, Route } from 'react-router-dom';
+import { SpeedInsights } from '@vercel/speed-insights/react';
 import { LanguageProvider } from './contexts/LanguageContext';
 import Layout from './components/Layout';
 import Home from './pages/Home';
@@ -26,6 +27,7 @@ const App: React.FC = () => {
           </Route>
         </Routes>
       </HashRouter>
+      <SpeedInsights />
     </LanguageProvider>
   );
 };
