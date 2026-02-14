@@ -3,44 +3,72 @@ import { useLanguage } from '../contexts/LanguageContext';
 import { supabase } from '../services/supabaseClient';
 import { ContactInfo, Memory } from '../types';
 import { fetchSettingValue } from '../services/settingsService';
-import { Trash2, Plus, ShieldCheck, LogOut, Loader2 } from 'lucide-react';
+import { 
+  Trash2, Plus, ShieldCheck, LogOut, Loader2, Package, ShoppingCart, 
+  CheckCircle, AlertCircle, X 
+} from 'lucide-react';
+
+// --- 類型定義 ---
+type TabType = 'contacts' | 'memories' | 'souvenirs' | 'orders';
+type ToastType = 'success' | 'error';
+
+interface ToastState {
+  show: boolean;
+  message: string;
+  type: ToastType;
+}
 
 const Admin: React.FC = () => {
   const { t } = useLanguage();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [password, setPassword] = useState('');
-  const [activeTab, setActiveTab] = useState<'contacts' | 'memories'>('contacts');
+  const [activeTab, setActiveTab] = useState<TabType>('contacts');
   
   // Data State
   const [contacts, setContacts] = useState<ContactInfo[]>([]);
   const [memories, setMemories] = useState<Memory[]>([]);
+  const [souvenirs, setSouvenirs] = useState<any[]>([]);
+  const [orders, setOrders] = useState<any[]>([]);
+  
+  // UI States
   const [loading, setLoading] = useState(false);
   const [isLoginLoading, setIsLoginLoading] = useState(false);
+  const [processingId, setProcessingId] = useState<string | number | null>(null); // 用於追蹤特定按鈕的讀取狀態
+  
+  // Toast Notification State
+  const [toast, setToast] = useState<ToastState>({ show: false, message: '', type: 'success' });
 
-  // Form State
+  // Forms State
   const [memTitle, setMemTitle] = useState('');
   const [memContent, setMemContent] = useState('');
+  
+  const [newSouvenir, setNewSouvenir] = useState({
+      name: '', category: '', price: 0, description: '', image_url: '', in_stock: true
+  });
 
+  // --- Helper: 顯示通知 ---
+  const showToast = (message: string, type: ToastType = 'success') => {
+    setToast({ show: true, message, type });
+    setTimeout(() => setToast(prev => ({ ...prev, show: false })), 3000);
+  };
+
+  // --- Auth ---
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoginLoading(true);
-    
     try {
-        // Fetch password from cloud
         const cloudPassword = await fetchSettingValue('admin_password');
-        
-        // Fallback to default if not set in DB yet (to prevent lockout)
         const validPassword = cloudPassword || 'admin2026';
-
         if (password === validPassword) {
             setIsAuthenticated(true);
+            showToast('登入成功', 'success');
             fetchData();
         } else {
-            alert('Incorrect Password');
+            showToast('密碼錯誤', 'error');
         }
     } catch (err) {
         console.error("Login error", err);
-        alert('Login failed. Check connection.');
+        showToast('登入驗證失敗，請檢查網絡', 'error');
     } finally {
         setIsLoginLoading(false);
     }
@@ -48,114 +76,180 @@ const Admin: React.FC = () => {
 
   const fetchData = async () => {
     setLoading(true);
-    const contactsReq = supabase.from('contacts').select('*');
-    const memoriesReq = supabase.from('memories').select('*').order('created_at', {ascending: false});
-    
-    const [cData, mData] = await Promise.all([contactsReq, memoriesReq]);
-    
-    if (cData.data) setContacts(cData.data);
-    if (mData.data) setMemories(mData.data);
-    
+    try {
+        const [cData, mData, sData, oData] = await Promise.all([
+            supabase.from('contacts').select('*'),
+            supabase.from('memories').select('*').order('created_at', {ascending: false}),
+            supabase.from('souvenirs').select('*').order('created_at', {ascending: false}),
+            supabase.from('orders').select('*').order('created_at', {ascending: false})
+        ]);
+        
+        if (cData.data) setContacts(cData.data as ContactInfo[]);
+        if (mData.data) setMemories(mData.data as Memory[]);
+        if (sData.data) setSouvenirs(sData.data);
+        if (oData.data) setOrders(oData.data);
+    } catch (error) {
+        showToast('數據加載失敗', 'error');
+    }
     setLoading(false);
   };
 
-  const handleDeleteContact = async (id: number) => {
-      if(!confirm('Delete this contact?')) return;
-      await supabase.from('contacts').delete().eq('id', id);
-      setContacts(contacts.filter(c => c.id !== id));
-  };
-
-  const handleDeleteMemory = async (id: number) => {
-      if(!confirm('Delete this memory article?')) return;
-      await supabase.from('memories').delete().eq('id', id);
-      setMemories(memories.filter(m => m.id !== id));
-  };
-
-  const handleAddMemory = async (e: React.FormEvent) => {
-      e.preventDefault();
-      const { data } = await supabase.from('memories').insert([{
-          title: memTitle,
-          content: memContent,
-          author: 'Admin'
-      }]).select();
-
-      if (data) {
-          setMemories([data[0], ...memories]);
-          setMemTitle('');
-          setMemContent('');
+  // --- 通用刪除處理 ---
+  const handleDelete = async (table: string, id: any, stateUpdater: Function, currentState: any[]) => {
+      if(!confirm(`確定要從 ${table} 刪除此項目嗎？此操作無法復原。`)) return;
+      
+      setProcessingId(id);
+      try {
+        const { error } = await supabase.from(table).delete().eq('id', id);
+        if (error) throw error;
+        
+        stateUpdater(currentState.filter(item => item.id !== id));
+        showToast('刪除成功');
+      } catch (error) {
+        console.error(error);
+        showToast('刪除失敗', 'error');
+      } finally {
+        setProcessingId(null);
       }
   };
 
+  // --- Handlers: Memories ---
+  const handleAddMemory = async (e: React.FormEvent) => {
+      e.preventDefault();
+      setProcessingId('add-memory');
+      try {
+        const { data, error } = await supabase.from('memories').insert([{ 
+            title: memTitle, 
+            content: memContent, 
+            author: 'Admin' 
+        }]).select();
+
+        if (error) throw error;
+        if (data) {
+            setMemories([data[0], ...memories]);
+            setMemTitle('');
+            setMemContent('');
+            showToast('回憶錄發布成功');
+        }
+      } catch (error) {
+          showToast('發布失敗', 'error');
+      } finally {
+          setProcessingId(null);
+      }
+  };
+
+  // --- Handlers: Souvenirs ---
+  const handleAddSouvenir = async (e: React.FormEvent) => {
+      e.preventDefault();
+      setProcessingId('add-souvenir');
+      try {
+        const { data, error } = await supabase.from('souvenirs').insert([newSouvenir]).select();
+        if (error) throw error;
+        if (data) { 
+            setSouvenirs([data[0], ...souvenirs]); 
+            setNewSouvenir({name: '', category: '', price: 0, description: '', image_url: '', in_stock: true});
+            showToast('商品上架成功');
+        }
+      } catch (error) {
+          showToast('商品上架失敗', 'error');
+      } finally {
+          setProcessingId(null);
+      }
+  };
+
+  const toggleStock = async (id: string, currentStatus: boolean) => {
+      setProcessingId(id);
+      try {
+        const { data, error } = await supabase.from('souvenirs').update({ in_stock: !currentStatus }).eq('id', id).select();
+        if (error) throw error;
+        if (data) {
+            setSouvenirs(souvenirs.map(s => s.id === id ? data[0] : s));
+            showToast(currentStatus ? '已標記為缺貨' : '已標記為有貨');
+        }
+      } catch (error) {
+          showToast('更新庫存狀態失敗', 'error');
+      } finally {
+          setProcessingId(null);
+      }
+  };
+
+  // --- Handlers: Orders ---
+  const updateOrderStatus = async (id: string, newStatus: string) => {
+      setProcessingId(id); // 這裡雖然是 select，但我們可以用 loading id 來鎖住操作
+      try {
+        const { data, error } = await supabase.from('orders').update({ status: newStatus }).eq('id', id).select();
+        if (error) throw error;
+        if (data) {
+            setOrders(orders.map(o => o.id === id ? data[0] : o));
+            showToast('訂單狀態已更新');
+        }
+      } catch (error) {
+          showToast('更新失敗', 'error');
+      } finally {
+          setProcessingId(null);
+      }
+  };
+
+  // --- Render Toast Component ---
+  const Toast = () => (
+    <div className={`fixed top-4 right-4 z-50 flex items-center gap-3 px-4 py-3 rounded-lg shadow-xl transition-all duration-300 transform ${toast.show ? 'translate-y-0 opacity-100' : '-translate-y-4 opacity-0 pointer-events-none' } ${toast.type === 'success' ? 'bg-green-50 text-green-800 border border-green-200' : 'bg-red-50 text-red-800 border border-red-200'}`}>
+        {toast.type === 'success' ? <CheckCircle size={20} /> : <AlertCircle size={20} />}
+        <span className="font-medium text-sm">{toast.message}</span>
+        <button onClick={() => setToast(prev => ({ ...prev, show: false }))} className="ml-2 opacity-50 hover:opacity-100"><X size={16} /></button>
+    </div>
+  );
+
   if (!isAuthenticated) {
       return (
-          <div className="min-h-screen flex items-center justify-center bg-gray-100">
+          <div className="min-h-screen flex items-center justify-center bg-gray-100 relative">
+              <Toast />
               <form onSubmit={handleLogin} className="bg-white p-8 rounded-xl shadow-lg max-w-sm w-full">
-                  <div className="flex justify-center mb-6 text-primary">
-                      <ShieldCheck size={48} />
-                  </div>
+                  <div className="flex justify-center mb-6 text-primary"><ShieldCheck size={48} /></div>
                   <h1 className="text-2xl font-bold text-center mb-6">{t('admin.title')}</h1>
-                  <input 
-                    type="password" 
-                    value={password}
-                    onChange={e => setPassword(e.target.value)}
-                    placeholder={t('admin.pass')}
-                    className="w-full border p-3 rounded-lg mb-4"
-                    disabled={isLoginLoading}
-                  />
-                  <button 
-                    type="submit" 
-                    className="w-full bg-primary text-white py-3 rounded-lg font-bold hover:bg-blue-800 transition-colors flex justify-center items-center gap-2"
-                    disabled={isLoginLoading}
-                  >
+                  <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder={t('admin.pass')} className="w-full border p-3 rounded-lg mb-4" disabled={isLoginLoading} />
+                  <button type="submit" className="w-full bg-primary text-white py-3 rounded-lg font-bold hover:bg-blue-800 transition-colors flex justify-center items-center gap-2" disabled={isLoginLoading}>
                       {isLoginLoading ? <Loader2 className="animate-spin" /> : t('admin.login')}
                   </button>
-                  <p className="text-xs text-center text-gray-400 mt-4">
-                      Password is now verifying against Supabase.
-                  </p>
               </form>
           </div>
       );
   }
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-gray-100 pb-20 relative">
+        <Toast />
+        
         <header className="bg-white shadow-sm sticky top-0 z-10">
             <div className="max-w-7xl mx-auto px-4 h-16 flex justify-between items-center">
-                <div className="flex items-center gap-2 font-bold text-xl text-primary">
-                    <ShieldCheck /> {t('admin.title')}
-                </div>
-                <button onClick={() => setIsAuthenticated(false)} className="text-gray-500 hover:text-red-500">
-                    <LogOut size={20} />
-                </button>
+                <div className="flex items-center gap-2 font-bold text-xl text-primary"><ShieldCheck /> Admin Dashboard</div>
+                <button onClick={() => setIsAuthenticated(false)} className="text-gray-500 hover:text-red-500"><LogOut size={20} /></button>
             </div>
         </header>
 
         <div className="max-w-7xl mx-auto px-4 py-8">
             {/* Tabs */}
-            <div className="flex flex-wrap gap-4 mb-8">
-                <button 
-                    onClick={() => setActiveTab('contacts')}
-                    className={`px-6 py-2 rounded-full font-medium transition-colors ${activeTab === 'contacts' ? 'bg-primary text-white' : 'bg-white text-gray-600 hover:bg-gray-200'}`}
-                >
-                    {t('admin.tab.contacts')}
-                </button>
-                <button 
-                    onClick={() => setActiveTab('memories')}
-                    className={`px-6 py-2 rounded-full font-medium transition-colors ${activeTab === 'memories' ? 'bg-primary text-white' : 'bg-white text-gray-600 hover:bg-gray-200'}`}
-                >
-                    {t('admin.tab.memories')}
-                </button>
+            <div className="flex flex-wrap gap-3 mb-8 bg-white p-2 rounded-xl shadow-sm inline-flex">
+                {[
+                    { id: 'contacts', label: '通訊錄' },
+                    { id: 'memories', label: '回憶錄' },
+                    { id: 'souvenirs', label: '周邊商品', icon: Package },
+                    { id: 'orders', label: '預購訂單', icon: ShoppingCart }
+                ].map(tab => (
+                    <button 
+                        key={tab.id} onClick={() => setActiveTab(tab.id as TabType)}
+                        className={`flex items-center gap-2 px-6 py-2.5 rounded-lg font-bold transition-all ${activeTab === tab.id ? 'bg-primary text-white shadow' : 'text-gray-500 hover:bg-gray-100'}`}
+                    >
+                        {tab.icon && <tab.icon size={16} />} {tab.label}
+                    </button>
+                ))}
             </div>
 
-            {loading ? (
-                <div className="text-center py-20"><Loader2 className="animate-spin mx-auto" /></div>
-            ) : (
+            {loading ? ( <div className="text-center py-20"><Loader2 className="animate-spin mx-auto text-primary" size={40} /></div> ) : (
                 <>
-                {/* CONTACTS TAB */}
+                {/* 1. CONTACTS TAB */}
                 {activeTab === 'contacts' && (
-                    <div className="bg-white rounded-xl shadow p-6">
-                        <div className="overflow-x-auto">
-                        <table className="w-full text-left">
+                    <div className="bg-white rounded-xl shadow p-6 overflow-x-auto">
+                         <table className="w-full text-left">
                             <thead className="border-b bg-gray-50">
                                 <tr>
                                     <th className="p-3">Name</th>
@@ -171,22 +265,24 @@ const Admin: React.FC = () => {
                                         <td className="p-3 text-sm text-gray-500">{c.role}</td>
                                         <td className="p-3 text-sm">{c.email}</td>
                                         <td className="p-3">
-                                            <button onClick={() => handleDeleteContact(c.id!)} className="text-red-500 hover:text-red-700">
-                                                <Trash2 size={16} />
+                                            <button 
+                                                onClick={() => handleDelete('contacts', c.id, setContacts, contacts)} 
+                                                disabled={processingId === c.id}
+                                                className="text-red-500 hover:text-red-700 disabled:opacity-50"
+                                            >
+                                                {processingId === c.id ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
                                             </button>
                                         </td>
                                     </tr>
                                 ))}
                             </tbody>
                         </table>
-                        </div>
                     </div>
                 )}
 
-                {/* MEMORIES TAB */}
+                {/* 2. MEMORIES TAB */}
                 {activeTab === 'memories' && (
                     <div className="grid lg:grid-cols-3 gap-8">
-                        {/* List */}
                         <div className="lg:col-span-2 space-y-4">
                             {memories.map(m => (
                                 <div key={m.id} className="bg-white p-6 rounded-xl shadow-sm flex justify-between items-start">
@@ -194,42 +290,159 @@ const Admin: React.FC = () => {
                                         <h3 className="font-bold text-lg mb-1">{m.title}</h3>
                                         <p className="text-sm text-gray-500 truncate w-64 md:w-96">{m.content}</p>
                                     </div>
-                                    <button onClick={() => handleDeleteMemory(m.id)} className="text-red-500 hover:text-red-700 p-2">
-                                        <Trash2 size={18} />
+                                    <button 
+                                        onClick={() => handleDelete('memories', m.id, setMemories, memories)} 
+                                        disabled={processingId === m.id}
+                                        className="text-red-500 hover:text-red-700 p-2 disabled:opacity-50"
+                                    >
+                                        {processingId === m.id ? <Loader2 size={18} className="animate-spin" /> : <Trash2 size={18} />}
                                     </button>
                                 </div>
                             ))}
                         </div>
-
-                        {/* Add Form */}
                         <div className="lg:col-span-1">
                             <div className="bg-white p-6 rounded-xl shadow-sm sticky top-24">
-                                <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
-                                    <Plus size={18} /> {t('admin.addMemory')}
-                                </h3>
+                                <h3 className="font-bold text-lg mb-4 flex items-center gap-2"><Plus size={18} /> {t('admin.addMemory')}</h3>
                                 <form onSubmit={handleAddMemory} className="space-y-4">
-                                    <input 
-                                        type="text" 
-                                        value={memTitle}
-                                        onChange={e => setMemTitle(e.target.value)}
-                                        placeholder="Title"
-                                        className="w-full border p-2 rounded"
-                                        required
-                                    />
-                                    <textarea 
-                                        value={memContent}
-                                        onChange={e => setMemContent(e.target.value)}
-                                        placeholder="Content (Markdown supported)"
-                                        rows={10}
-                                        className="w-full border p-2 rounded"
-                                        required
-                                    />
-                                    <button type="submit" className="w-full bg-primary text-white py-2 rounded font-medium hover:bg-blue-800">
-                                        Publish
+                                    <input type="text" value={memTitle} onChange={e => setMemTitle(e.target.value)} placeholder="Title" className="w-full border p-2 rounded" required />
+                                    <textarea value={memContent} onChange={e => setMemContent(e.target.value)} placeholder="Content (Markdown supported)" rows={10} className="w-full border p-2 rounded" required />
+                                    <button 
+                                        type="submit" 
+                                        disabled={processingId === 'add-memory'}
+                                        className="w-full bg-primary text-white py-2 rounded font-medium hover:bg-blue-800 disabled:bg-gray-400 flex justify-center"
+                                    >
+                                        {processingId === 'add-memory' ? <Loader2 className="animate-spin" /> : 'Publish'}
                                     </button>
                                 </form>
                             </div>
                         </div>
+                    </div>
+                )}
+
+                {/* 3. SOUVENIRS TAB */}
+                {activeTab === 'souvenirs' && (
+                    <div className="grid lg:grid-cols-3 gap-8">
+                        <div className="lg:col-span-2 space-y-4">
+                            {souvenirs.map(s => (
+                                <div key={s.id} className="bg-white p-5 rounded-xl shadow-sm flex gap-4">
+                                    <img src={s.image_url} alt={s.name} className="w-24 h-24 object-cover rounded-lg border bg-gray-100" />
+                                    <div className="flex-1">
+                                        <div className="flex justify-between">
+                                            <h3 className="font-bold text-lg">{s.name} <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded ml-2">{s.category}</span></h3>
+                                            <div className="text-secondary font-bold">¥{s.price}</div>
+                                        </div>
+                                        <p className="text-sm text-gray-500 mt-1 line-clamp-2">{s.description}</p>
+                                        <div className="mt-3 flex gap-3 items-center">
+                                            <button 
+                                                onClick={() => toggleStock(s.id, s.in_stock)} 
+                                                disabled={processingId === s.id}
+                                                className={`text-xs px-3 py-1 rounded-full font-bold flex items-center gap-1 transition-colors ${
+                                                    s.in_stock ? 'bg-green-100 text-green-700 hover:bg-green-200' : 'bg-red-100 text-red-700 hover:bg-red-200'
+                                                }`}
+                                            >
+                                                {processingId === s.id && <Loader2 size={10} className="animate-spin" />}
+                                                {s.in_stock ? '🟢 上架中' : '🔴 已缺貨'}
+                                            </button>
+                                            <button 
+                                                onClick={() => handleDelete('souvenirs', s.id, setSouvenirs, souvenirs)} 
+                                                disabled={processingId === s.id}
+                                                className="text-red-500 text-xs hover:underline flex items-center gap-1 disabled:opacity-50"
+                                            >
+                                                <Trash2 size={12}/> 刪除
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                        <div className="lg:col-span-1 bg-white p-6 rounded-xl shadow-sm sticky top-24 h-fit">
+                            <h3 className="font-bold text-lg mb-4 flex items-center gap-2"><Plus size={18} /> 新增商品</h3>
+                            <form onSubmit={handleAddSouvenir} className="space-y-4">
+                                <input type="text" placeholder="商品名稱" required value={newSouvenir.name} onChange={e => setNewSouvenir({...newSouvenir, name: e.target.value})} className="w-full border p-2 rounded" />
+                                <div className="flex gap-2">
+                                    <input type="text" placeholder="分類 (如: 服飾)" required value={newSouvenir.category} onChange={e => setNewSouvenir({...newSouvenir, category: e.target.value})} className="w-1/2 border p-2 rounded" />
+                                    <input type="number" placeholder="價格" required value={newSouvenir.price} onChange={e => setNewSouvenir({...newSouvenir, price: Number(e.target.value)})} className="w-1/2 border p-2 rounded" />
+                                </div>
+                                <input type="url" placeholder="圖片網址 (URL)" required value={newSouvenir.image_url} onChange={e => setNewSouvenir({...newSouvenir, image_url: e.target.value})} className="w-full border p-2 rounded" />
+                                <textarea placeholder="商品描述" rows={3} required value={newSouvenir.description} onChange={e => setNewSouvenir({...newSouvenir, description: e.target.value})} className="w-full border p-2 rounded" />
+                                <label className="flex items-center gap-2 text-sm font-bold">
+                                    <input type="checkbox" checked={newSouvenir.in_stock} onChange={e => setNewSouvenir({...newSouvenir, in_stock: e.target.checked})} />
+                                    直接上架 (有庫存)
+                                </label>
+                                <button 
+                                    type="submit" 
+                                    disabled={processingId === 'add-souvenir'}
+                                    className="w-full bg-primary text-white py-2 rounded font-bold hover:bg-blue-800 disabled:bg-gray-400 flex justify-center"
+                                >
+                                    {processingId === 'add-souvenir' ? <Loader2 className="animate-spin" /> : '儲存商品'}
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                )}
+
+                {/* 4. ORDERS TAB */}
+                {activeTab === 'orders' && (
+                    <div className="bg-white rounded-xl shadow p-6 overflow-x-auto">
+                        <table className="w-full text-left whitespace-nowrap">
+                            <thead className="bg-gray-50 border-b">
+                                <tr>
+                                    <th className="p-3">訂單編號/時間</th>
+                                    <th className="p-3">預購人資訊</th>
+                                    <th className="p-3">購買內容</th>
+                                    <th className="p-3">總計</th>
+                                    <th className="p-3">狀態</th>
+                                    <th className="p-3">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {orders.map(o => (
+                                    <tr key={o.id} className="border-b hover:bg-gray-50">
+                                        <td className="p-3 text-xs text-gray-500">
+                                            {o.id.substring(0,8)}...<br/>
+                                            {new Date(o.created_at).toLocaleDateString()}
+                                        </td>
+                                        <td className="p-3">
+                                            <div className="font-bold">{o.customer_name}</div>
+                                            <div className="text-xs text-gray-500">{o.customer_contact}</div>
+                                        </td>
+                                        <td className="p-3 text-sm">
+                                            <ul className="list-disc list-inside">
+                                                {o.items?.map((item: any, idx: number) => (
+                                                    <li key={idx}>{item.name} x {item.quantity}</li>
+                                                ))}
+                                            </ul>
+                                        </td>
+                                        <td className="p-3 font-bold text-secondary">¥{o.total_amount}</td>
+                                        <td className="p-3">
+                                            <div className="flex items-center gap-2">
+                                                {processingId === o.id && <Loader2 size={14} className="animate-spin text-gray-500" />}
+                                                <select 
+                                                    value={o.status || 'pending'} 
+                                                    disabled={processingId === o.id}
+                                                    onChange={(e) => updateOrderStatus(o.id, e.target.value)}
+                                                    className={`text-xs font-bold p-1 rounded border outline-none cursor-pointer disabled:opacity-50 ${o.status === 'completed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}
+                                                >
+                                                    <option value="pending">待處理</option>
+                                                    <option value="completed">已完成/已取貨</option>
+                                                    <option value="cancelled">已取消</option>
+                                                </select>
+                                            </div>
+                                        </td>
+                                        <td className="p-3">
+                                            <button 
+                                                onClick={() => handleDelete('orders', o.id, setOrders, orders)} 
+                                                disabled={processingId === o.id}
+                                                className="text-red-500 hover:bg-red-50 p-2 rounded disabled:opacity-50"
+                                            >
+                                                {processingId === o.id ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                        {orders.length === 0 && <div className="text-center py-10 text-gray-400">目前沒有訂單紀錄</div>}
                     </div>
                 )}
                 </>

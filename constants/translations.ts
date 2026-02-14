@@ -27,6 +27,16 @@ export const TRANSLATIONS: TranslationDictionary = {
     [Language.ZH_CN]: '成员',
     [Language.ZH_TW]: '成員',
   },
+  'nav.souvenirs': {
+    [Language.EN]: 'Souvenirs',
+    [Language.ZH_CN]: '纪念品',
+    [Language.ZH_TW]: '紀念品',
+  },
+  'nav.cont': {
+    [Language.EN]: 'Members',
+    [Language.ZH_CN]: '成员',
+    [Language.ZH_TW]: '成員',
+  },
 
   // Home
   'home.title': {
@@ -220,5 +230,45 @@ export const TRANSLATIONS: TranslationDictionary = {
     [Language.EN]: 'Write New Memory',
     [Language.ZH_CN]: '撰写新文章',
     [Language.ZH_TW]: '撰寫新文章',
+  },
+  'add.cart': {
+    [Language.EN]: 'Add to Cart',
+    [Language.ZH_CN]: '加入购物车',
+    [Language.ZH_TW]: '加入購物車',
+  },
+  'empyt.cart': {
+    [Language.EN]: 'Cart is empty',
+    [Language.ZH_CN]: '加入购物车',
+    [Language.ZH_TW]: '購物車是空的',
+  },
+  'buy.contact':{
+    [Language.EN]: 'Email, Wechat ID',
+    [Language.ZH_CN]: '联系方式（电话，微信号）',
+    [Language.ZH_TW]: '聯絡方式 (Email 或 Wechat ID)',
+  }, 
+  'sending.order':{
+    [Language.EN]: 'Confirm Order',
+    [Language.ZH_CN]: '确认送出订单',
+    [Language.ZH_TW]: '確認送出訂單',
+  },
+  'title.souvenirs':{
+    [Language.EN]: 'Souvenirs',
+    [Language.ZH_CN]: '周邊紀念品',
+    [Language.ZH_TW]: '周邊紀念品',
+  },
+  'subtitle.souvenirs':{
+    [Language.EN]: 'Purchase exclusive club souvenirs to support Time. Photography\'s continued creation.',
+    [Language.ZH_CN]: '选购社团专属周边，支持 Time. Photography 继续创作。',
+    [Language.ZH_TW]: '選購社團專屬周邊，支持 Time. Photography 繼續創作。',
+  },
+  'all.items': {
+    [Language.EN]: 'All Items',
+    [Language.ZH_CN]: '全部商品',
+    [Language.ZH_TW]: '全部商品',
+  },
+  'sumup': {
+    [Language.EN]: 'Total',
+    [Language.ZH_CN]: '总金额 Total',
+    [Language.ZH_TW]: '總金額 Total',
   },
 };

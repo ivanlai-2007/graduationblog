@@ -125,7 +125,7 @@ const Contact: React.FC = () => {
     }
 };
 
-const isForbiddenRole = newRole === '2026届社员' || newRole === '2026届社长';//驗證輸入合法性
+const isForbiddenRole = newRole === '2026届社员' || newRole === '2026届社长' || newRole === '2026届' || newRole === '2026届副社长' || newRole === '2026屆';//驗證輸入合法性
 const isSubmitDisabled = !turnstileToken || isLoading || isForbiddenRole;
   return (
     <div className="bg-white min-h-screen py-12 relative">

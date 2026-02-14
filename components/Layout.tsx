@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext';
 import { Language, NavItem } from '../types';
-import { Camera, Menu, X, Home, Image, MessageSquare, Phone, GraduationCap, BookOpen, ShieldCheck, Github, Twitter } from 'lucide-react';
+import { Store, Camera, Menu, X, Home, Image, MessageSquare, Phone, GraduationCap, BookOpen, ShieldCheck, Github, Twitter } from 'lucide-react';
 
 const Layout: React.FC = () => {
   const { language, setLanguage, t } = useLanguage();
@@ -16,6 +16,7 @@ const Layout: React.FC = () => {
     { key: 'nav.gallery', path: '/gallery', icon: Image },
     { key: 'nav.guestbook', path: '/guestbook', icon: MessageSquare },
     { key: 'nav.contact', path: '/contact', icon: Phone },
+    { key: 'nav.souvenirs', path: '/souvenirs', icon: Store },
   ];
 
   return (
