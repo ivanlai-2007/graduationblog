@@ -43,3 +43,28 @@ create policy "Public Update Settings" on site_settings for update using (true);
 -- 4. Set Initial Admin Password (Change 'admin2026' to your desired password)
 insert into site_settings (key, value) values ('admin_password', 'admin2026')
 on conflict (key) do nothing;
+
+-- 1. 周邊商品表
+create table souvenirs (
+  id uuid default gen_random_uuid() primary key,
+  name text not null,
+  category text not null,
+  price numeric not null,
+  description text,
+  image_url text,
+  in_stock boolean default true,
+  created_at timestamp with time zone default timezone('utc'::text, now())
+);
+
+-- 2. 訂單表
+create table orders (
+  id uuid default gen_random_uuid() primary key,
+  customer_name text not null,
+  customer_contact text not null,
+  items jsonb not null, -- 將購物車內容存為 JSON
+  total_amount numeric not null,
+  status text default 'pending', -- pending, completed, cancelled
+  created_at timestamp with time zone default timezone('utc'::text, now())
+);
+
+-- 記得設定 RLS (Row Level Security) 政策，或者暫時停用 RLS 方便測試。

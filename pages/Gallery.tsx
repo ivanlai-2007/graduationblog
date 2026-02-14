@@ -11,7 +11,7 @@ const Gallery: React.FC = () => {
       id: '1',
       titleKey: 'album.campus',
       descriptionKey: 'album.campus.desc',
-      coverImage: 'https://picsum.photos/600/400?random=1',
+      coverImage: 'https://i.ibb.co/svkXNykC/q4-1-IMG-20241018-225803.jpg',
       link: 'https://drive.google.com',
       platform: 'Google Drive'
     },
@@ -19,7 +19,7 @@ const Gallery: React.FC = () => {
       id: '2',
       titleKey: 'album.sports',
       descriptionKey: 'album.sports.desc',
-      coverImage: 'https://picsum.photos/600/400?random=2',
+      coverImage: 'https://i.ibb.co/cKhYkJMK/83b4bb7303b538a4e64dfdd2b7916cf0.jpg',
       link: 'https://1drv.ms/f/c/3e1d9ee25a5a5c48/IgBF9bd5NVTwQ5zQ5SpeyMsXAdrq40_7idbryVSaNE0NdpA?e=lNhK9R',
       platform: 'OneDrive'
     },
@@ -27,12 +27,11 @@ const Gallery: React.FC = () => {
       id: '3',
       titleKey: 'album.grad',
       descriptionKey: 'album.grad.desc',
-      coverImage: 'https://picsum.photos/600/400?random=3',
+      coverImage: 'https://i.ibb.co/zh95KKSH/q4-1-55b296f1978109c443a3af1e2061ce9.jpg',
       link: 'https://pan.baidu.com',
       platform: 'Baidu Pan'
     }
   ];
-
   return (
     <div className="bg-gray-50 min-h-screen py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
