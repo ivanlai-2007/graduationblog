@@ -65,7 +65,7 @@ const Guestbook: React.FC = () => {
         body:{
           name:name,
           content:content,
-          turnstiletoken:turnstileToken,
+          turnstileToken:turnstileToken,
         },
       });
       if(error) throw error;
@@ -124,7 +124,7 @@ const Guestbook: React.FC = () => {
                 </div>
                     <div className="flex justify-center py-2">
                         <Turnstile 
-                           siteKey="0x4AAAAAACaXdAvIDhYzaJd3" 
+                          siteKey="0x4AAAAAACaXdAvIDhYzaJd3" 
                           onSuccess={(token) => setTurnstileToken(token)}
                           onExpire={() => setTurnstileToken(null)}
                           onError={() => setTurnstileToken(null)}
