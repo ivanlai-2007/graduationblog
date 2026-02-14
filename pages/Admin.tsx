@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { supabase } from '../services/supabaseClient';
 import { ContactInfo, Memory } from '../types';
-import { fetchSettingValue } from '../services/settingsService';
+// import { fetchSettingValue } from '../services/settingsService'; 
+import { Turnstile } from '@marsidev/react-turnstile'; // 1. 引入 Turnstile
 import { 
   Trash2, Plus, ShieldCheck, LogOut, Loader2, Package, ShoppingCart, 
   CheckCircle, AlertCircle, X 
@@ -23,6 +24,7 @@ const Admin: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [password, setPassword] = useState('');
   const [activeTab, setActiveTab] = useState<TabType>('contacts');
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
   
   // Data State
   const [contacts, setContacts] = useState<ContactInfo[]>([]);
@@ -55,20 +57,37 @@ const Admin: React.FC = () => {
   // --- Auth ---
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!turnstileToken) {
+        showToast('請先完成機器人驗證', 'error');
+        return;
+    }
+
     setIsLoginLoading(true);
     try {
-        const cloudPassword = await fetchSettingValue('admin_password');
-        const validPassword = cloudPassword || 'admin2026';
-        if (password === validPassword) {
-            setIsAuthenticated(true);
-            showToast('登入成功', 'success');
-            fetchData();
-        } else {
-            showToast('密碼錯誤', 'error');
-        }
-    } catch (err) {
+        // 呼叫 admin-action 進行登入驗證
+        const { data, error } = await supabase.functions.invoke('admin-action', {
+            body: {
+                action: 'login',
+                password: password,
+                turnstileToken: turnstileToken
+            }
+        });
+
+        if (error) throw error; // Edge Function 回傳非 2xx 或 throw error
+
+        setIsAuthenticated(true);
+        showToast('登入成功', 'success');
+        fetchData();
+        setTurnstileToken(null); // 登入後清除 token
+        
+    } catch (err: any) {
         console.error("Login error", err);
-        showToast('登入驗證失敗，請檢查網絡', 'error');
+        // 如果後端回傳錯誤訊息，顯示出來 (例如：密碼錯誤)
+        // 注意：這裡可能需要解析 err body，如果 supabase client 自動解析了
+        // 通常是 err.message
+        showToast('登入失敗：' + (err.message || '密碼錯誤或驗證失效'), 'error');
+        setTurnstileToken(null); // 失敗後重置 Turnstile，強迫重新驗證
     } finally {
         setIsLoginLoading(false);
     }
@@ -96,82 +115,126 @@ const Admin: React.FC = () => {
 
   // --- 通用刪除處理 ---
   const handleDelete = async (table: string, id: any, stateUpdater: Function, currentState: any[]) => {
-      if(!confirm(`確定要從 ${table} 刪除此項目嗎？此操作無法復原。`)) return;
+    if(!confirm(`確定要從 ${table} 刪除此項目嗎？`)) return;
+    
+    setProcessingId(id);
+    try {
+      // 修改處：呼叫 admin-action
+      // Mapping table names to action names
+      const actionMap: Record<string, string> = {
+          'memories': 'delete-memory',
+          'souvenirs': 'delete-souvenir',
+          'orders': 'delete-order',
+          'contacts': 'delete-contact'
+      };
+
+      const { error } = await supabase.functions.invoke('admin-action', {
+          body: {
+              action: actionMap[table],
+              payload: { id },
+              password: password // 將使用者輸入的密碼傳給後端驗證
+          }
+      });
+
+      if (error) throw error;
       
-      setProcessingId(id);
-      try {
-        const { error } = await supabase.from(table).delete().eq('id', id);
-        if (error) throw error;
-        
-        stateUpdater(currentState.filter(item => item.id !== id));
-        showToast('刪除成功');
-      } catch (error) {
-        console.error(error);
-        showToast('刪除失敗', 'error');
-      } finally {
-        setProcessingId(null);
-      }
-  };
+      stateUpdater(currentState.filter(item => item.id !== id));
+      showToast('刪除成功');
+    } catch (error: any) {
+      console.error(error);
+      showToast('刪除失敗: ' + error.message, 'error');
+    } finally {
+      setProcessingId(null);
+    }
+};
 
   // --- Handlers: Memories ---
   const handleAddMemory = async (e: React.FormEvent) => {
-      e.preventDefault();
-      setProcessingId('add-memory');
-      try {
-        const { data, error } = await supabase.from('memories').insert([{ 
-            title: memTitle, 
-            content: memContent, 
-            author: 'Admin' 
-        }]).select();
+    e.preventDefault();
+    setProcessingId('add-memory');
+    try {
+      // 修改處：呼叫 admin-action
+      const { data, error } = await supabase.functions.invoke('admin-action', {
+          body: {
+              action: 'add-memory',
+              payload: { 
+                  title: memTitle, 
+                  content: memContent, 
+                  author: 'Admin' 
+              },
+              password: password
+          }
+      });
 
-        if (error) throw error;
-        if (data) {
-            setMemories([data[0], ...memories]);
-            setMemTitle('');
-            setMemContent('');
-            showToast('回憶錄發布成功');
-        }
-      } catch (error) {
-          showToast('發布失敗', 'error');
-      } finally {
-          setProcessingId(null);
+      if (error) throw error;
+      const newItem = Array.isArray(data) ? data[0] : data;
+
+      if (newItem) {
+          setMemories([newItem, ...memories]);
+          setMemTitle('');
+          setMemContent('');
+          showToast('回憶錄發布成功');
       }
-  };
+    } catch (error: any) {
+        showToast('發布失敗: ' + error.message, 'error');
+    } finally {
+        setProcessingId(null);
+    }
+};
 
   // --- Handlers: Souvenirs ---
   const handleAddSouvenir = async (e: React.FormEvent) => {
-      e.preventDefault();
-      setProcessingId('add-souvenir');
-      try {
-        const { data, error } = await supabase.from('souvenirs').insert([newSouvenir]).select();
-        if (error) throw error;
-        if (data) { 
-            setSouvenirs([data[0], ...souvenirs]); 
-            setNewSouvenir({name: '', category: '', price: 0, description: '', image_url: '', in_stock: true});
-            showToast('商品上架成功');
-        }
-      } catch (error) {
-          showToast('商品上架失敗', 'error');
-      } finally {
-          setProcessingId(null);
-      }
-  };
+    e.preventDefault();
+    setProcessingId('add-souvenir');
+    try {
+      // 修改處：呼叫 admin-action
+      const { data, error } = await supabase.functions.invoke('admin-action', {
+          body: {
+              action: 'add-souvenir',
+              payload: newSouvenir,
+              password: password
+          }
+      });
 
-  const toggleStock = async (id: string, currentStatus: boolean) => {
-      setProcessingId(id);
-      try {
-        const { data, error } = await supabase.from('souvenirs').update({ in_stock: !currentStatus }).eq('id', id).select();
-        if (error) throw error;
-        if (data) {
-            setSouvenirs(souvenirs.map(s => s.id === id ? data[0] : s));
-            showToast(currentStatus ? '已標記為缺貨' : '已標記為有貨');
-        }
-      } catch (error) {
-          showToast('更新庫存狀態失敗', 'error');
-      } finally {
-          setProcessingId(null);
+      if (error) throw error;
+      const newItem = Array.isArray(data) ? data[0] : data;
+
+      if (newItem) { 
+          setSouvenirs([newItem, ...souvenirs]); 
+          setNewSouvenir({name: '', category: '', price: 0, description: '', image_url: '', in_stock: true});
+          showToast('商品上架成功');
       }
-  };
+    } catch (error: any) {
+        showToast('商品上架失敗: ' + error.message, 'error');
+    } finally {
+        setProcessingId(null);
+    }
+};
+
+    const toggleStock = async (id: string, currentStatus: boolean) => {
+    setProcessingId(id);
+    try {
+      const { data, error } = await supabase.functions.invoke('admin-action', {
+          body: {
+              action: 'update-stock',
+              payload: { id, in_stock: !currentStatus },
+              password: password
+          }
+      });
+
+      if (error) throw error;
+      const updatedItem = Array.isArray(data) ? data[0] : data;
+
+      if (updatedItem) {
+          setSouvenirs(souvenirs.map(s => s.id === id ? updatedItem : s));
+          showToast(currentStatus ? '已標記為缺貨' : '已標記為有貨');
+      }
+    } catch (error) {
+        showToast('更新庫存狀態失敗', 'error');
+    } finally {
+        setProcessingId(null);
+    }
+};
 
   // --- Handlers: Orders ---
   const updateOrderStatus = async (id: string, newStatus: string) => {
@@ -206,8 +269,37 @@ const Admin: React.FC = () => {
               <form onSubmit={handleLogin} className="bg-white p-8 rounded-xl shadow-lg max-w-sm w-full">
                   <div className="flex justify-center mb-6 text-primary"><ShieldCheck size={48} /></div>
                   <h1 className="text-2xl font-bold text-center mb-6">{t('admin.title')}</h1>
-                  <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder={t('admin.pass')} className="w-full border p-3 rounded-lg mb-4" disabled={isLoginLoading} />
-                  <button type="submit" className="w-full bg-primary text-white py-3 rounded-lg font-bold hover:bg-blue-800 transition-colors flex justify-center items-center gap-2" disabled={isLoginLoading}>
+                  
+                  <input 
+                    type="password" 
+                    value={password} 
+                    onChange={e => setPassword(e.target.value)} 
+                    placeholder={t('admin.pass')} 
+                    className="w-full border p-3 rounded-lg mb-4" 
+                    disabled={isLoginLoading} 
+                  />
+
+                  {/* 4. 加入 Turnstile 元件 */}
+                  <div className="flex justify-center mb-4">
+                      <Turnstile 
+                          siteKey="0x4AAAAAACaXdAvIDhYzaJd3" // 你的 Site Key
+                          onSuccess={(token) => setTurnstileToken(token)}
+                          onExpire={() => setTurnstileToken(null)}
+                          onError={() => setTurnstileToken(null)}
+                          options={{ size: 'normal' }}
+                      />
+                  </div>
+
+                  <button 
+                    type="submit" 
+                    // 5. 如果沒有 Token 或正在讀取，就鎖住按鈕
+                    disabled={isLoginLoading || !turnstileToken}
+                    className={`w-full py-3 rounded-lg font-bold transition-colors flex justify-center items-center gap-2 ${
+                        isLoginLoading || !turnstileToken 
+                        ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
+                        : 'bg-primary text-white hover:bg-blue-800'
+                    }`}
+                  >
                       {isLoginLoading ? <Loader2 className="animate-spin" /> : t('admin.login')}
                   </button>
               </form>
