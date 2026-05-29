@@ -315,14 +315,6 @@ const Souvenirs: React.FC = () => {
                       <span className="font-mono font-bold text-gray-900">{lookupResult.order_number}</span>
                     </div>
                     <div className="flex justify-between text-sm">
-                      <span className="text-gray-500">{t('ordername')}</span>
-                      <span className="text-gray-800">{lookupResult.customer_name}</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-500">{t('ordercontact')}</span>
-                      <span className="text-gray-800">{lookupResult.contact_info}</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
                       <span className="text-gray-500">{t('sumup')}</span>
                       <span className="font-serif font-bold text-secondary text-lg">¥{lookupResult.total_amount}</span>
                     </div>
