@@ -59,31 +59,28 @@ const Guestbook: React.FC = () => {
     }
 
     if (!name.trim() || !content.trim()) return;
-
-    try {
-      const { data, error } = await supabase
-        .from('messages')
-        .insert([
-          {
-            name: name,
-            content: content,
-          },
-        ])
-        .select();
-
-      if (error) throw error;
-
-      if (data && data[0]) {
-        setMessages([data[0], ...messages]);
+    setIsLoading(true);
+    try{
+      const{data, error} = await supabase.functions.invoke('post-message',{
+        body:{
+          name:name,
+          content:content,
+          turnstileToken:turnstileToken,
+        },
+      });
+      if(error) throw error;
+      if(data && data[0]){
+        setMessages([data[0],...messages]);
         setContent('');
-        setTurnstileToken(null); // 同contact頁面，提交後重置 Token
+        setTurnstileToken(null);
       }
-    } catch (err: any) {
+    } catch(err: any){
       console.error('Error adding message:', err);
-      alert('Failed to post message. Please try again.');
+      alert('提交失敗：' + (err.message || '請稍後再試'));
+    } finally{
+      setIsLoading(false);
     }
-    setIsLoading(false);
-  };
+  }; //handleSubmit
 
   const getAvatarColor = (name: string) => {
       let hash = 0;
@@ -125,28 +122,25 @@ const Guestbook: React.FC = () => {
                     required
                   />
                 </div>
-                    <form onSubmit={handleSubmit} className="space-y-4">
-                    {/* 在提交按鈕上方加入驗證框 */}
                     <div className="flex justify-center py-2">
-                      <Turnstile 
-                        siteKey="0x4AAAAAACaXdAvIDhYzaJd3" 
-                        onSuccess={(token) => setTurnstileToken(token)}
-                        onExpire={() => setTurnstileToken(null)}
-                        onError={() => setTurnstileToken(null)}
-                        data-size="compact"
-                      />
-                    </div>
-
-                    <button
-                      type="submit"
-                      disabled={!turnstileToken}
-                      className={`w-full text-white py-2 rounded-lg font-medium transition-colors flex justify-center items-center gap-2 shadow-lg ${
-                        !turnstileToken ? 'bg-gray-400 cursor-not-allowed' : 'bg-primary hover:bg-blue-800 shadow-primary/20'
+                        <Turnstile 
+                          siteKey="0x4AAAAAACaXdAvIDhYzaJd3" 
+                          onSuccess={(token) => setTurnstileToken(token)}
+                          onExpire={() => setTurnstileToken(null)}
+                          onError={() => setTurnstileToken(null)}
+                          //options={{ size: 'compact' }}
+                         />
+                      </div>
+                      <button
+                        type="submit"
+                        disabled={!turnstileToken || isLoading}
+                        className={`w-full text-white py-2 rounded-lg font-medium transition-colors flex justify-center items-center gap-2 shadow-lg ${
+                        !turnstileToken || isLoading ? 'bg-gray-400 cursor-not-allowed' : 'bg-primary hover:bg-blue-800 shadow-primary/20'
                       }`}
                     >
-                      <Send size={16} /> {t('guestbook.submit')}
-                    </button>
-                  </form>
+                        {isLoading ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
+                        {isLoading ? 'Sending...' : t('guestbook.submit')}
+                      </button>
               </form>
             </div>
           </div>

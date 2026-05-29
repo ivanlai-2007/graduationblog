@@ -23,21 +23,31 @@ export const TRANSLATIONS: TranslationDictionary = {
     [Language.ZH_TW]: '回憶錄',
   },
   'nav.contact': {
-    [Language.EN]: 'Contact',
-    [Language.ZH_CN]: '联系方式',
-    [Language.ZH_TW]: '聯繫方式',
+    [Language.EN]: 'Members',
+    [Language.ZH_CN]: '成员',
+    [Language.ZH_TW]: '成員',
+  },
+  'nav.souvenirs': {
+    [Language.EN]: 'Souvenirs',
+    [Language.ZH_CN]: '纪念品',
+    [Language.ZH_TW]: '紀念品',
+  },
+  'nav.cont': {
+    [Language.EN]: 'Members',
+    [Language.ZH_CN]: '成员',
+    [Language.ZH_TW]: '成員',
   },
 
   // Home
   'home.title': {
-    [Language.EN]: 'Class of 2026',
-    [Language.ZH_CN]: '2026届 毕业生',
-    [Language.ZH_TW]: '2026屆 畢業生',
+    [Language.EN]: 'Time. Photography Club',
+    [Language.ZH_CN]: '時光攝影社',
+    [Language.ZH_TW]: '時光攝影社',
   },
   'home.subtitle': {
-    [Language.EN]: 'Forever Young, Forever Us.',
-    [Language.ZH_CN]: '青春不散场，我们顶峰相见。',
-    [Language.ZH_TW]: '青春不散場，我們頂峰相見。',
+    [Language.EN]: 'Let life be beautiful like summer flowers and death like autumn leaves.',
+    [Language.ZH_CN]: '生如夏花之绚烂，死如秋叶之静美',
+    [Language.ZH_TW]: '生如夏花之絢爛，死如秋葉之靜美',
   },
   'home.welcome': {
     [Language.EN]: 'Welcome to our digital memory capsule.',
@@ -78,8 +88,8 @@ export const TRANSLATIONS: TranslationDictionary = {
   },
   'gallery.upload.desc': {
     [Language.EN]: 'Do you have photos to share? Upload them to our shared collection via the link below.',
-    [Language.ZH_CN]: '你有照片想要分享吗？通过下方链接上传到我们的班级收藏中。',
-    [Language.ZH_TW]: '你有照片想要分享嗎？通過下方連結上傳到我們的班級收藏中。',
+    [Language.ZH_CN]: '你有照片想要分享吗？通过下方链接上传到我们的社团收藏中。',
+    [Language.ZH_TW]: '你有照片想要分享嗎？通過下方連結上傳到我們的社團收藏中。',
   },
   'gallery.upload.linkText': {
     [Language.EN]: 'Go to Upload Page (External)',
@@ -87,34 +97,34 @@ export const TRANSLATIONS: TranslationDictionary = {
     [Language.ZH_TW]: '前往上傳頁面 (外部連結)',
   },
   'album.campus': {
-    [Language.EN]: 'Campus Life',
-    [Language.ZH_CN]: '校园生活',
-    [Language.ZH_TW]: '校園生活',
+    [Language.EN]: 'Pending',
+    [Language.ZH_CN]: '雲盤整理中',
+    [Language.ZH_TW]: '雲盤整理中',
   },
   'album.campus.desc': {
     [Language.EN]: 'Daily moments in the classroom and hallway.',
-    [Language.ZH_CN]: '教室和走廊里的日常瞬间。',
-    [Language.ZH_TW]: '教室和走廊裡的日常瞬間。',
+    [Language.ZH_CN]: '雲盤整理中',
+    [Language.ZH_TW]: '雲盤整理中',
   },
   'album.sports': {
     [Language.EN]: 'Sports Day',
-    [Language.ZH_CN]: '运动会',
-    [Language.ZH_TW]: '運動會',
+    [Language.ZH_CN]: '雲盤整理中',
+    [Language.ZH_TW]: '雲盤整理中',
   },
   'album.sports.desc': {
     [Language.EN]: 'Sweat, tears, and victory.',
-    [Language.ZH_CN]: '汗水、泪水与胜利。',
-    [Language.ZH_TW]: '汗水、淚水與勝利。',
+    [Language.ZH_CN]: '雲盤整理中',
+    [Language.ZH_TW]: '雲盤整理中',
   },
   'album.grad': {
     [Language.EN]: 'Graduation Ceremony',
-    [Language.ZH_CN]: '毕业典礼',
-    [Language.ZH_TW]: '畢業典禮',
+    [Language.ZH_CN]: '雲盤整理中',
+    [Language.ZH_TW]: '雲盤整理中',
   },
   'album.grad.desc': {
     [Language.EN]: 'The final chapter.',
-    [Language.ZH_CN]: '最终章。',
-    [Language.ZH_TW]: '最終章。',
+    [Language.ZH_CN]: '雲盤整理中',
+    [Language.ZH_TW]: '雲盤整理中',
   },
   'btn.access': {
     [Language.EN]: 'Access Drive',
@@ -125,8 +135,8 @@ export const TRANSLATIONS: TranslationDictionary = {
   // Guestbook
   'guestbook.title': {
     [Language.EN]: 'Leave a Message',
-    [Language.ZH_CN]: '留下寄语',
-    [Language.ZH_TW]: '留下寄語',
+    [Language.ZH_CN]: '留下想法',
+    [Language.ZH_TW]: '留下想法',
   },
   'guestbook.input.name': {
     [Language.EN]: 'Your Name',
@@ -135,24 +145,24 @@ export const TRANSLATIONS: TranslationDictionary = {
   },
   'guestbook.input.msg': {
     [Language.EN]: 'Your Message...',
-    [Language.ZH_CN]: '写下你的祝福...',
-    [Language.ZH_TW]: '寫下你的祝福...',
+    [Language.ZH_CN]: '写下你的想法...',
+    [Language.ZH_TW]: '寫下你的想法...',
   },
   'guestbook.submit': {
     [Language.EN]: 'Post Message',
-    [Language.ZH_CN]: '发布留言',
-    [Language.ZH_TW]: '發佈留言',
+    [Language.ZH_CN]: '发布想法',
+    [Language.ZH_TW]: '發佈想法',
   },
   // Contact
   'contact.title': {
-    [Language.EN]: 'Keep in Touch',
-    [Language.ZH_CN]: '保持联系',
-    [Language.ZH_TW]: '保持聯繫',
+    [Language.EN]: 'Members',
+    [Language.ZH_CN]: '社团成员',
+    [Language.ZH_TW]: '社團成員',
   },
   'contact.add': {
-    [Language.EN]: 'Add Contact Info',
-    [Language.ZH_CN]: '添加联系方式',
-    [Language.ZH_TW]: '添加聯繫方式',
+    [Language.EN]: 'Add Your Contact Info',
+    [Language.ZH_CN]: '添加你的联系方式',
+    [Language.ZH_TW]: '添加你的聯繫方式',
   },
   'contact.role': {
     [Language.EN]: 'Role',
@@ -180,9 +190,9 @@ export const TRANSLATIONS: TranslationDictionary = {
 
   // Memories
   'memories.title': {
-    [Language.EN]: 'Class Chronicles',
-    [Language.ZH_CN]: '班级回忆录',
-    [Language.ZH_TW]: '班級回憶錄',
+    [Language.EN]: 'Time we shared',
+    [Language.ZH_CN]: '时光回忆录',
+    [Language.ZH_TW]: '時光回憶錄',
   },
   'memories.readMore': {
     [Language.EN]: 'Read More',
@@ -220,5 +230,45 @@ export const TRANSLATIONS: TranslationDictionary = {
     [Language.EN]: 'Write New Memory',
     [Language.ZH_CN]: '撰写新文章',
     [Language.ZH_TW]: '撰寫新文章',
+  },
+  'add.cart': {
+    [Language.EN]: 'Add to Cart',
+    [Language.ZH_CN]: '加入购物车',
+    [Language.ZH_TW]: '加入購物車',
+  },
+  'empyt.cart': {
+    [Language.EN]: 'Cart is empty',
+    [Language.ZH_CN]: '加入购物车',
+    [Language.ZH_TW]: '購物車是空的',
+  },
+  'buy.contact':{
+    [Language.EN]: 'Email, Wechat ID',
+    [Language.ZH_CN]: '联系方式（电话，微信号）',
+    [Language.ZH_TW]: '聯絡方式 (Email 或 Wechat ID)',
+  }, 
+  'sending.order':{
+    [Language.EN]: 'Confirm Order',
+    [Language.ZH_CN]: '确认送出订单',
+    [Language.ZH_TW]: '確認送出訂單',
+  },
+  'title.souvenirs':{
+    [Language.EN]: 'Souvenirs',
+    [Language.ZH_CN]: '周邊紀念品',
+    [Language.ZH_TW]: '周邊紀念品',
+  },
+  'subtitle.souvenirs':{
+    [Language.EN]: 'Purchase exclusive club souvenirs to support Time. Photography\'s continued creation.',
+    [Language.ZH_CN]: '选购社团专属周边，支持 Time. Photography 继续创作。',
+    [Language.ZH_TW]: '選購社團專屬周邊，支持 Time. Photography 繼續創作。',
+  },
+  'all.items': {
+    [Language.EN]: 'All Items',
+    [Language.ZH_CN]: '全部商品',
+    [Language.ZH_TW]: '全部商品',
+  },
+  'sumup': {
+    [Language.EN]: 'Total',
+    [Language.ZH_CN]: '总金额 Total',
+    [Language.ZH_TW]: '總金額 Total',
   },
 };

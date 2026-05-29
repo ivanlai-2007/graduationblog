@@ -13,14 +13,14 @@ const Home: React.FC = () => {
       <div className="relative h-[80vh] w-full overflow-hidden bg-gray-900">
         <div 
           className="absolute inset-0 bg-cover bg-center opacity-60"
-          style={{ backgroundImage: 'url("https://i.ibb.co/R47VxYh6/LYF0952.jpg")' }}
+          style={{ backgroundImage: 'url("https://i.ibb.co/4g03vJ50/865534-C2-2517-4419-B821-F5-BCDD0-B19-F0.jpg")' }}
         ></div>
-        <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/40 to-transparent"></div>
+        <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/20 to-transparent"></div>
         
         <div className="relative z-10 h-full flex flex-col justify-center items-center text-center px-4 max-w-4xl mx-auto">
           <div className="animate-fade-in-up">
             <h2 className="text-secondary font-bold tracking-widest uppercase text-sm md:text-base mb-4">
-              Est. 2023 - 2026
+              Est. 2006 - 2026
             </h2>
             <h1 className="font-serif text-5xl md:text-7xl lg:text-8xl text-white font-bold mb-6 leading-tight">
               {t('home.title')}
@@ -62,14 +62,14 @@ const Home: React.FC = () => {
                 <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4 text-primary">
                     <Star size={24} />
                 </div>
-                <h3 className="font-serif text-xl font-bold mb-2">1,095 Days</h3>
-                <p className="text-gray-500">Of memories shared together.</p>
+                <h3 className="font-serif text-xl font-bold mb-2">7.305 Days</h3>
+                <p className="text-gray-500">Of "Time" shared together.</p>
             </div>
             <div className="p-6">
                 <div className="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4 text-secondary">
                     <Star size={24} />
                 </div>
-                <h3 className="font-serif text-xl font-bold mb-2">42 Students</h3>
+                <h3 className="font-serif text-xl font-bold mb-2">xx Members</h3>
                 <p className="text-gray-500">One incredible family.</p>
             </div>
             <div className="p-6">

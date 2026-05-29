@@ -43,3 +43,60 @@ create policy "Public Update Settings" on site_settings for update using (true);
 -- 4. Set Initial Admin Password (Change 'admin2026' to your desired password)
 insert into site_settings (key, value) values ('admin_password', 'admin2026')
 on conflict (key) do nothing;
+
+-- 1. 周邊商品表
+create table souvenirs (
+  id uuid default gen_random_uuid() primary key,
+  name text not null,
+  category text not null,
+  price numeric not null,
+  description text,
+  image_url text,
+  in_stock boolean default true,
+  created_at timestamp with time zone default timezone('utc'::text, now())
+);
+
+-- 2. 訂單表
+create table orders (
+  id uuid default gen_random_uuid() primary key,
+  customer_name text not null,
+  customer_contact text not null,
+  items jsonb not null, -- 將購物車內容存為 JSON
+  total_amount numeric not null,
+  status text default 'pending', -- pending, completed, cancelled
+  created_at timestamp with time zone default timezone('utc'::text, now())
+);
+
+-- 記得設定 RLS (Row Level Security) 政策，或者暫時停用 RLS 方便測試。
+
+-- 1. 加欄位
+ALTER TABLE orders ADD COLUMN order_number TEXT UNIQUE;
+
+-- 2. 創建計數序列
+CREATE SEQUENCE order_number_seq START 1;
+
+-- 3. 觸發器函數
+CREATE OR REPLACE FUNCTION generate_order_number()
+RETURNS TRIGGER AS $$
+BEGIN
+  IF NEW.order_number IS NULL THEN
+    NEW.order_number := 'ORD-' || LPAD(nextval('order_number_seq')::TEXT, 6, '0');
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- 4. 綁定觸發器
+CREATE TRIGGER set_order_number
+  BEFORE INSERT ON orders
+  FOR EACH ROW
+  EXECUTE FUNCTION generate_order_number();
+
+-- 5. 給已有訂單補編號（修正版）
+UPDATE orders
+SET order_number = 'ORD-' || LPAD(sub.rn::TEXT, 6, '0')
+FROM (
+  SELECT id, ROW_NUMBER() OVER (ORDER BY created_at) AS rn
+  FROM orders
+) sub
+WHERE orders.id = sub.id AND orders.order_number IS NULL;
