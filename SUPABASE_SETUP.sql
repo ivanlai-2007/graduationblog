@@ -68,3 +68,35 @@ create table orders (
 );
 
 -- 記得設定 RLS (Row Level Security) 政策，或者暫時停用 RLS 方便測試。
+
+-- 1. 加欄位
+ALTER TABLE orders ADD COLUMN order_number TEXT UNIQUE;
+
+-- 2. 創建計數序列
+CREATE SEQUENCE order_number_seq START 1;
+
+-- 3. 觸發器函數
+CREATE OR REPLACE FUNCTION generate_order_number()
+RETURNS TRIGGER AS $$
+BEGIN
+  IF NEW.order_number IS NULL THEN
+    NEW.order_number := 'ORD-' || LPAD(nextval('order_number_seq')::TEXT, 6, '0');
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- 4. 綁定觸發器
+CREATE TRIGGER set_order_number
+  BEFORE INSERT ON orders
+  FOR EACH ROW
+  EXECUTE FUNCTION generate_order_number();
+
+-- 5. 給已有訂單補編號（修正版）
+UPDATE orders
+SET order_number = 'ORD-' || LPAD(sub.rn::TEXT, 6, '0')
+FROM (
+  SELECT id, ROW_NUMBER() OVER (ORDER BY created_at) AS rn
+  FROM orders
+) sub
+WHERE orders.id = sub.id AND orders.order_number IS NULL;

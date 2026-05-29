@@ -9,7 +9,7 @@ import Contact from './pages/Contact';
 import Memories from './pages/Memories';
 import MemoryDetail from './pages/MemoryDetail';
 import Admin from './pages/Admin';
-import Test from './pages/Test';
+import Test from './pages/test';
 import Souvenirs from './pages/Souvenirs';
 
 const App: React.FC = () => {

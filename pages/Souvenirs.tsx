@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { supabase } from '../services/supabaseClient';
-import { ShoppingBag, ArrowUp, X, Gift, Tag, CheckCircle, ShoppingCart, Plus, Minus, Trash2 } from 'lucide-react';
+import { ShoppingBag, ArrowUp, X, Gift, Tag, CheckCircle, ShoppingCart, Plus, Minus, Trash2, Search, Package, Clock, CheckCircle2, XCircle, Copy } from 'lucide-react';
 import { Turnstile } from '@marsidev/react-turnstile';
 
 export interface SouvenirItem {
@@ -10,7 +10,7 @@ export interface SouvenirItem {
   category: string;
   price: number;
   description: string;
-  image_url: string; // 配合資料庫蛇底式命名
+  image_url: string;
   in_stock: boolean;
 }
 
@@ -18,21 +18,53 @@ export interface CartItem extends SouvenirItem {
   quantity: number;
 }
 
+interface OrderResult {
+  id: string;
+  order_number: string;
+  customer_name: string;
+  contact_info: string;
+  items: CartItem[];
+  total_amount: number;
+  status: string;
+  created_at: string;
+}
+
+type OrderStatus = 'pending' | 'completed' | 'cancelled';
+
+const ORDER_STATUS_MAP: Record<OrderStatus, { label: string; icon: React.ReactNode; color: string; bgColor: string }> = {
+  pending:    { label: '待處理',   icon: <Clock size={18} />,       color: 'text-amber-600',  bgColor: 'bg-amber-50 border-amber-200' },
+  completed:  { label: '已完成',   icon: <CheckCircle2 size={18} />,color: 'text-green-600',  bgColor: 'bg-green-50 border-green-200' },
+  cancelled:  { label: '已取消',   icon: <XCircle size={18} />,     color: 'text-red-600',    bgColor: 'bg-red-50 border-red-200' },
+};
+
 const Souvenirs: React.FC = () => {
   const { t } = useLanguage();
   const [items, setItems] = useState<SouvenirItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState<string>('All');
-  
+
   // Cart & Modal State
   const [cart, setCart] = useState<CartItem[]>([]);
   const [showCartModal, setShowCartModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+
   // Checkout Form State
   const [orderName, setOrderName] = useState('');
+  const [orderAddress, setOrderAddress] = useState('');
   const [orderContact, setOrderContact] = useState('');
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+
+  // Order Success State
+  const [orderResult, setOrderResult] = useState<OrderResult | null>(null);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [copiedOrderId, setCopiedOrderId] = useState(false);
+
+  // Order Lookup State
+  const [lookupId, setLookupId] = useState('');
+  const [lookupResult, setLookupResult] = useState<OrderResult | null>(null);
+  const [isLooking, setIsLooking] = useState(false);
+  const [lookupError, setLookupError] = useState('');
+  const [showLookupSection, setShowLookupSection] = useState(false);
 
   // Back to Top State
   const [showScrollTop, setShowScrollTop] = useState(false);
@@ -72,7 +104,6 @@ const Souvenirs: React.FC = () => {
       }
       return [...prev, { ...item, quantity: 1 }];
     });
-    // 可選：加入購物車的小提示
   };
 
   const updateCartQuantity = (id: string, delta: number) => {
@@ -92,6 +123,16 @@ const Souvenirs: React.FC = () => {
   const cartTotal = useMemo(() => cart.reduce((sum, item) => sum + item.price * item.quantity, 0), [cart]);
   const cartItemCount = useMemo(() => cart.reduce((sum, item) => sum + item.quantity, 0), [cart]);
 
+  // --- 複製訂單編號 ---
+  const copyOrderId = () => {
+    if (orderResult?.order_number) {
+      navigator.clipboard.writeText(orderResult.order_number);
+      setCopiedOrderId(true);
+      setTimeout(() => setCopiedOrderId(false), 2000);
+    }
+  };
+
+  // --- 提交訂單 ---
   const handleOrderSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!turnstileToken) {
@@ -102,11 +143,11 @@ const Souvenirs: React.FC = () => {
 
     setIsSubmitting(true);
     try {
-        // 呼叫 Edge Function 處理訂單與驗證
         const { data, error } = await supabase.functions.invoke('submit-order', {
             body: {
                 name: orderName,
                 contact: orderContact,
+                address: orderAddress,
                 items: cart,
                 total_amount: cartTotal,
                 turnstileToken: turnstileToken
@@ -115,11 +156,29 @@ const Souvenirs: React.FC = () => {
 
         if (error) throw error;
 
-        alert('預購成功！我們已收到您的訂單。');
-        setCart([]);
+        // 展示成功界面
+        const result: OrderResult = data?.order
+          ? data.order
+          : {
+              id: data?.id || `tmp-${Date.now()}`,
+              order_number: data?.order_number || '生成中...',
+              customer_name: orderName,
+              contact_info: orderContact,
+              items: [...cart],
+              total_amount: cartTotal,
+              status: 'pending',
+              created_at: new Date().toISOString(),
+            };
+
+        setOrderResult(result);
         setShowCartModal(false);
+        setShowSuccessModal(true);
+
+        // 清空表單
+        setCart([]);
         setOrderName('');
         setOrderContact('');
+        setOrderAddress('');
         setTurnstileToken(null);
     } catch (err) {
         console.error(err);
@@ -129,10 +188,45 @@ const Souvenirs: React.FC = () => {
     }
   };
 
+  // --- 訂單查詢 ---
+  const handleOrderLookup = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!lookupId.trim()) return;
+
+    setIsLooking(true);
+    setLookupError('');
+    setLookupResult(null);
+
+    try {
+      const { data, error } = await supabase
+        .from('orders')
+        .select('*')
+        .eq('order_number', lookupId.trim().toUpperCase())
+        .single();
+
+      if (error || !data) {
+        setLookupError('找不到該訂單，請確認訂單編號是否正確。');
+      } else {
+        setLookupResult(data as OrderResult);
+      }
+    } catch (err) {
+      console.error(err);
+      setLookupError('查詢失敗，請稍後再試。');
+    } finally {
+      setIsLooking(false);
+    }
+  };
+
+  // --- 格式化日期 ---
+  const formatDate = (dateStr: string) => {
+    const d = new Date(dateStr);
+    return d.toLocaleDateString('zh-TW', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
+  };
+
   return (
     <div className="bg-white min-h-screen py-12 relative">
       <div className="max-w-5xl mx-auto px-4">
-        
+
         {/* Header Section */}
         <div className="text-center mb-12 relative">
           <h1 className="font-serif text-4xl font-bold text-gray-900 mb-4 flex items-center justify-center gap-3">
@@ -143,7 +237,107 @@ const Souvenirs: React.FC = () => {
           <p className="mt-4 text-gray-500 max-w-xl mx-auto text-sm">
             {t('subtitle.souvenirs')}
           </p>
+
+          {/* 訂單查詢入口 */}
+          <button
+            onClick={() => setShowLookupSection(!showLookupSection)}
+            className="mt-6 inline-flex items-center gap-2 text-sm text-primary hover:text-blue-800 transition-colors font-medium"
+          >
+            <Search size={16} />
+            查詢訂單狀態
+          </button>
         </div>
+
+        {/* 訂單查詢區域 */}
+        {showLookupSection && (
+          <div className="mb-12 animate-in slide-in-from-top-4 duration-300">
+            <div className="max-w-lg mx-auto bg-gradient-to-br from-gray-50 to-white border border-gray-200 rounded-2xl p-6 shadow-sm">
+              <h3 className="font-serif font-bold text-lg text-gray-900 mb-4 flex items-center gap-2">
+                <Package size={20} className="text-primary" />
+                訂單查詢
+              </h3>
+              <form onSubmit={handleOrderLookup} className="flex gap-3">
+                <input
+                  type="text"
+                  value={lookupId}
+                  onChange={e => { setLookupId(e.target.value); setLookupError(''); }}
+                  placeholder="請輸入訂單編號，如 ORD-000001"
+                  className="flex-1 border border-gray-200 rounded-xl px-4 py-3 text-sm uppercase focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none"
+                />
+                <button
+                  type="submit"
+                  disabled={isLooking || !lookupId.trim()}
+                  className={`px-6 py-3 rounded-xl font-bold text-sm text-white transition-all ${
+                    isLooking || !lookupId.trim()
+                      ? 'bg-gray-300 cursor-not-allowed'
+                      : 'bg-primary hover:bg-blue-800 active:scale-95 shadow-md'
+                  }`}
+                >
+                  {isLooking ? '查詢中...' : '查詢'}
+                </button>
+              </form>
+
+              {/* 查詢錯誤 */}
+              {lookupError && (
+                <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-xl text-sm text-red-600 flex items-center gap-2">
+                  <XCircle size={16} />
+                  {lookupError}
+                </div>
+              )}
+
+              {/* 查詢結果 */}
+              {lookupResult && (
+                <div className="mt-4 border border-gray-200 rounded-xl overflow-hidden">
+                  {/* 狀態標頭 */}
+                  <div className={`px-5 py-4 flex items-center justify-between ${ORDER_STATUS_MAP[lookupResult.status as OrderStatus]?.bgColor || 'bg-gray-50'}`}>
+                    <div className="flex items-center gap-2">
+                      {ORDER_STATUS_MAP[lookupResult.status as OrderStatus]?.icon || <Clock size={18} />}
+                      <span className={`font-bold text-sm ${ORDER_STATUS_MAP[lookupResult.status as OrderStatus]?.color || 'text-gray-600'}`}>
+                        {ORDER_STATUS_MAP[lookupResult.status as OrderStatus]?.label || lookupResult.status}
+                      </span>
+                    </div>
+                    <span className="text-xs text-gray-500">{formatDate(lookupResult.created_at)}</span>
+                  </div>
+
+                  {/* 訂單詳情 */}
+                  <div className="p-5 space-y-3">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-500">訂單編號</span>
+                      <span className="font-mono font-bold text-gray-900">{lookupResult.order_number}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-500">收件人</span>
+                      <span className="text-gray-800">{lookupResult.customer_name}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-500">聯絡方式</span>
+                      <span className="text-gray-800">{lookupResult.contact_info}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-500">訂單金額</span>
+                      <span className="font-serif font-bold text-secondary text-lg">¥{lookupResult.total_amount}</span>
+                    </div>
+
+                    {/* 商品列表 */}
+                    {lookupResult.items && lookupResult.items.length > 0 && (
+                      <div className="pt-3 border-t border-gray-100">
+                        <p className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2">訂購商品</p>
+                        <div className="space-y-2">
+                          {lookupResult.items.map((item: any, idx: number) => (
+                            <div key={idx} className="flex justify-between text-sm">
+                              <span className="text-gray-700">{item.name} × {item.quantity}</span>
+                              <span className="text-gray-500">¥{item.price * item.quantity}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         {isLoading ? (
           <div className="text-center py-20 text-gray-500 flex flex-col items-center gap-4 animate-pulse">
@@ -159,8 +353,8 @@ const Souvenirs: React.FC = () => {
                   key={cat}
                   onClick={() => setActiveCategory(cat)}
                   className={`flex items-center gap-1.5 px-5 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
-                    activeCategory === cat 
-                      ? 'bg-primary text-white shadow-md' 
+                    activeCategory === cat
+                      ? 'bg-primary text-white shadow-md'
                       : 'bg-white border border-gray-200 text-gray-600 hover:border-primary hover:text-primary'
                   }`}
                 >
@@ -189,7 +383,7 @@ const Souvenirs: React.FC = () => {
                       <div>
                         <span className="text-secondary font-serif font-bold text-2xl">¥{item.price}</span>
                       </div>
-                      <button 
+                      <button
                         onClick={() => addToCart(item)}
                         disabled={!item.in_stock}
                         className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-bold transition-all ${
@@ -240,7 +434,7 @@ const Souvenirs: React.FC = () => {
                         <X size={24} />
                     </button>
                 </div>
-                
+
                 <div className="p-6 overflow-y-auto flex-grow">
                     {cart.length === 0 ? (
                         <p className="text-center text-gray-500 my-8">{t('empty.cart')}</p>
@@ -279,22 +473,27 @@ const Souvenirs: React.FC = () => {
                                 <input required type="text" value={orderContact} onChange={e => setOrderContact(e.target.value)} className="w-full border border-gray-200 rounded-lg p-3 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none" placeholder="以便我們通知取貨" />
                             </div>
 
+                            <div>
+                                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">您的地址 / Address</label>
+                                <input required type="text" value={orderAddress} onChange={e => setOrderAddress(e.target.value)} className="w-full border border-gray-200 rounded-lg p-3 h-10 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none" placeholder="請輸入完整郵寄地址" />
+                            </div>
+
                             <div className="bg-blue-50 p-4 rounded-lg flex justify-between items-center border border-blue-100">
                                 <span className="text-sm font-bold text-primary">{t('sumup')}</span>
                                 <span className="text-secondary font-serif font-bold text-2xl">¥{cartTotal}</span>
                             </div>
 
                             <div className="my-4 flex justify-center">
-                                <Turnstile 
-                                    siteKey="0x4AAAAAACaXdAvIDhYzaJd3"
+                                <Turnstile
+                                    siteKey="1x00000000000000000000AA"
                                     onSuccess={(token) => setTurnstileToken(token)}
                                     onExpire={() => setTurnstileToken(null)}
                                     onError={() => setTurnstileToken(null)}
                                 />
                             </div>
 
-                            <button 
-                                type="submit" 
+                            <button
+                                type="submit"
                                 disabled={!turnstileToken || isSubmitting}
                                 className={`w-full py-3 rounded-lg font-bold text-white transition-all transform ${
                                     (!turnstileToken || isSubmitting) ? 'bg-gray-300 cursor-not-allowed' : 'bg-primary hover:bg-blue-800 active:scale-95 shadow-lg'
@@ -306,6 +505,88 @@ const Souvenirs: React.FC = () => {
                     )}
                 </div>
             </div>
+        </div>
+      )}
+
+      {/* ==================== 訂單成功 Modal ==================== */}
+      {showSuccessModal && orderResult && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full relative overflow-hidden">
+            {/* 頂部裝飾 */}
+            <div className="bg-gradient-to-r from-green-400 to-emerald-500 p-8 text-center">
+              <div className="mx-auto w-16 h-16 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center mb-4 animate-bounce">
+                <CheckCircle2 size={36} className="text-white" />
+              </div>
+              <h2 className="text-2xl font-serif font-bold text-white mb-1">預購成功！</h2>
+              <p className="text-green-100 text-sm">我們已收到您的訂單</p>
+            </div>
+
+            {/* 訂單編號 */}
+            <div className="px-6 -mt-4">
+              <div className="bg-white border border-gray-200 rounded-xl shadow-lg p-4 flex items-center justify-between gap-3">
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs text-gray-400 font-bold uppercase tracking-wide mb-1">訂單編號</p>
+                  <p className="font-mono text-xl font-bold text-gray-900">{orderResult.order_number}</p>
+                </div>
+                <button
+                  onClick={copyOrderId}
+                  className="flex-shrink-0 flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-primary bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors"
+                >
+                  {copiedOrderId ? <><CheckCircle size={14} /> 已複製</> : <><Copy size={14} /> 複製</>}
+                </button>
+              </div>
+            </div>
+
+            {/* 訂單明細 */}
+            <div className="p-6 space-y-4">
+              {/* 收件資訊 */}
+              <div className="bg-gray-50 rounded-xl p-4 space-y-2">
+                <p className="text-xs font-bold text-gray-400 uppercase tracking-wide">收件資訊</p>
+                <div className="grid grid-cols-2 gap-2 text-sm">
+                  <span className="text-gray-500">姓名</span>
+                  <span className="text-gray-800 font-medium">{orderResult.customer_name}</span>
+                  <span className="text-gray-500">聯絡方式</span>
+                  <span className="text-gray-800 font-medium">{orderResult.contact_info}</span>
+                </div>
+              </div>
+
+              {/* 商品列表 */}
+              <div>
+                <p className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2">訂購商品</p>
+                <div className="space-y-2">
+                  {orderResult.items.map((item, idx) => (
+                    <div key={idx} className="flex justify-between items-center text-sm bg-gray-50 rounded-lg p-3">
+                      <div className="flex-1">
+                        <span className="font-medium text-gray-800">{item.name}</span>
+                        <span className="text-gray-400 ml-2">× {item.quantity}</span>
+                      </div>
+                      <span className="text-gray-600 font-mono">¥{item.price * item.quantity}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* 總計 */}
+              <div className="flex justify-between items-center pt-3 border-t border-gray-200">
+                <span className="font-bold text-gray-700">訂單總額</span>
+                <span className="text-secondary font-serif font-bold text-2xl">¥{orderResult.total_amount}</span>
+              </div>
+
+              {/* 提示 */}
+              <p className="text-xs text-gray-400 text-center leading-relaxed">
+                請妥善保存訂單編號，以便查詢訂單狀態。<br />
+                如有疑問請聯繫客服。
+              </p>
+
+              {/* 關閉按鈕 */}
+              <button
+                onClick={() => setShowSuccessModal(false)}
+                className="w-full py-3 bg-primary text-white rounded-xl font-bold hover:bg-blue-800 transition-all active:scale-95 shadow-lg"
+              >
+                完成
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
