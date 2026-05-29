@@ -592,7 +592,7 @@ const Souvenirs: React.FC = () => {
                 onClick={() => setShowSuccessModal(false)}
                 className="w-full py-3 bg-primary text-white rounded-xl font-bold hover:bg-blue-800 transition-all active:scale-95 shadow-lg"
               >
-                t('complete')
+                {t('complete')}
               </button>
             </div>
           </div>
