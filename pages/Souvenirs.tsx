@@ -253,7 +253,7 @@ const Souvenirs: React.FC = () => {
             className="mt-6 inline-flex items-center gap-2 text-sm text-primary hover:text-blue-800 transition-colors font-medium"
           >
             <Search size={16} />
-            查詢訂單狀態
+            {t('orderlookup')}
           </button>
         </div>
 
@@ -263,7 +263,7 @@ const Souvenirs: React.FC = () => {
             <div className="max-w-lg mx-auto bg-gradient-to-br from-gray-50 to-white border border-gray-200 rounded-2xl p-6 shadow-sm">
               <h3 className="font-serif font-bold text-lg text-gray-900 mb-4 flex items-center gap-2">
                 <Package size={20} className="text-primary" />
-                訂單查詢
+                {t('orderlookup')}
               </h3>
               <form onSubmit={handleOrderLookup} className="flex gap-3">
                 <input
@@ -311,26 +311,26 @@ const Souvenirs: React.FC = () => {
                   {/* 訂單詳情 */}
                   <div className="p-5 space-y-3">
                     <div className="flex justify-between text-sm">
-                      <span className="text-gray-500">訂單編號</span>
+                      <span className="text-gray-500">{t('orderid')}</span>
                       <span className="font-mono font-bold text-gray-900">{lookupResult.order_number}</span>
                     </div>
                     <div className="flex justify-between text-sm">
-                      <span className="text-gray-500">收件人</span>
+                      <span className="text-gray-500">{t('ordername')}</span>
                       <span className="text-gray-800">{lookupResult.customer_name}</span>
                     </div>
                     <div className="flex justify-between text-sm">
-                      <span className="text-gray-500">聯絡方式</span>
+                      <span className="text-gray-500">{t('ordercontact')}</span>
                       <span className="text-gray-800">{lookupResult.contact_info}</span>
                     </div>
                     <div className="flex justify-between text-sm">
-                      <span className="text-gray-500">訂單金額</span>
+                      <span className="text-gray-500">{t('sumup')}</span>
                       <span className="font-serif font-bold text-secondary text-lg">¥{lookupResult.total_amount}</span>
                     </div>
 
                     {/* 商品列表 */}
                     {lookupResult.items && lookupResult.items.length > 0 && (
                       <div className="pt-3 border-t border-gray-100">
-                        <p className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2">訂購商品</p>
+                        <p className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2">{t('orderitem')}</p>
                         <div className="space-y-2">
                           {lookupResult.items.map((item: any, idx: number) => (
                             <div key={idx} className="flex justify-between text-sm">
@@ -437,7 +437,7 @@ const Souvenirs: React.FC = () => {
             <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] flex flex-col relative">
                 <div className="p-6 border-b border-gray-100 flex justify-between items-center sticky top-0 bg-white rounded-t-2xl z-10">
                     <h2 className="text-2xl font-serif font-bold text-gray-900 flex items-center gap-2">
-                        <ShoppingCart size={24} className="text-primary" /> 購物車結帳
+                        <ShoppingCart size={24} className="text-primary" /> {t('your.cart')}
                     </h2>
                     <button onClick={() => setShowCartModal(false)} className="text-gray-400 hover:text-gray-700 hover:rotate-90 transition-all duration-300">
                         <X size={24} />
@@ -494,7 +494,7 @@ const Souvenirs: React.FC = () => {
 
                             <div className="my-4 flex justify-center">
                                 <Turnstile
-                                    siteKey="1x00000000000000000000AA"
+                                    siteKey="0x4AAAAAACaXdAvIDhYzaJd3"
                                     onSuccess={(token) => setTurnstileToken(token)}
                                     onExpire={() => setTurnstileToken(null)}
                                     onError={() => setTurnstileToken(null)}
@@ -523,7 +523,7 @@ const Souvenirs: React.FC = () => {
           <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full relative overflow-hidden">
             {/* 頂部裝飾 */}
             <div className="bg-gradient-to-r from-green-400 to-emerald-500 p-8 text-center">
-              <div className="mx-auto w-16 h-16 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center mb-4 animate-bounce">
+              <div className="mx-auto w-16 h-16 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center mb-4">
                 <CheckCircle2 size={36} className="text-white" />
               </div>
               <h2 className="text-2xl font-serif font-bold text-white mb-1">預購成功！</h2>
@@ -541,7 +541,7 @@ const Souvenirs: React.FC = () => {
                   onClick={copyOrderId}
                   className="flex-shrink-0 flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-primary bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors"
                 >
-                  {copiedOrderId ? <><CheckCircle size={14} /> 已複製</> : <><Copy size={14} /> 複製</>}
+                  {copiedOrderId ? <><CheckCircle size={14} /> copied</> : <><Copy size={14} /> copy</>}
                 </button>
               </div>
             </div>
@@ -552,16 +552,16 @@ const Souvenirs: React.FC = () => {
               <div className="bg-gray-50 rounded-xl p-4 space-y-2">
                 <p className="text-xs font-bold text-gray-400 uppercase tracking-wide">收件資訊</p>
                 <div className="grid grid-cols-2 gap-2 text-sm">
-                  <span className="text-gray-500">姓名</span>
+                  <span className="text-gray-500">{t('ordername')}</span>
                   <span className="text-gray-800 font-medium">{orderResult.customer_name}</span>
-                  <span className="text-gray-500">聯絡方式</span>
+                  <span className="text-gray-500">{t('ordercontact')}</span>
                   <span className="text-gray-800 font-medium">{orderResult.contact_info}</span>
                 </div>
               </div>
 
               {/* 商品列表 */}
               <div>
-                <p className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2">訂購商品</p>
+                <p className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2">{t('orderitem')}</p>
                 <div className="space-y-2">
                   {orderResult.items.map((item, idx) => (
                     <div key={idx} className="flex justify-between items-center text-sm bg-gray-50 rounded-lg p-3">
@@ -577,14 +577,14 @@ const Souvenirs: React.FC = () => {
 
               {/* 總計 */}
               <div className="flex justify-between items-center pt-3 border-t border-gray-200">
-                <span className="font-bold text-gray-700">訂單總額</span>
+                <span className="font-bold text-gray-700">{t('sumup')}</span>
                 <span className="text-secondary font-serif font-bold text-2xl">¥{orderResult.total_amount}</span>
               </div>
 
               {/* 提示 */}
               <p className="text-xs text-gray-400 text-center leading-relaxed">
-                請妥善保存訂單編號，以便查詢訂單狀態。<br />
-                如有疑問請聯繫客服。
+                {t('ordersignL1')}<br />
+                {t('ordersignL2')}
               </p>
 
               {/* 關閉按鈕 */}
@@ -592,7 +592,7 @@ const Souvenirs: React.FC = () => {
                 onClick={() => setShowSuccessModal(false)}
                 className="w-full py-3 bg-primary text-white rounded-xl font-bold hover:bg-blue-800 transition-all active:scale-95 shadow-lg"
               >
-                完成
+                t('complete')
               </button>
             </div>
           </div>

@@ -271,4 +271,49 @@ export const TRANSLATIONS: TranslationDictionary = {
     [Language.ZH_CN]: '总金额 Total',
     [Language.ZH_TW]: '總金額 Total',
   },
+  'ordersignL1': {
+    [Language.EN]: 'Please provide your order id for order confirmation and delivery updates.',
+    [Language.ZH_CN]: '请妥善保存订单编号，以便查询订单状态。',
+    [Language.ZH_TW]: '請妥善保存訂單編號，以便查詢訂單狀態。',
+  },
+  'ordersignL2': {
+    [Language.EN]: 'If you have any questions, please contact our support team.',
+    [Language.ZH_CN]: '如有疑问请联系客服。',
+    [Language.ZH_TW]: '如有疑問請聯繫客服。',
+  },
+  'complete': {
+    [Language.EN]: 'Order Complete',
+    [Language.ZH_CN]: '订单完成',
+    [Language.ZH_TW]: '訂單完成',
+  },
+  'ordername': {
+    [Language.EN]: 'Name',
+    [Language.ZH_CN]: '姓名',
+    [Language.ZH_TW]: '姓名',
+  },
+  'ordercontact': {
+    [Language.EN]: 'Contact Info',
+    [Language.ZH_CN]: '联系方式',
+    [Language.ZH_TW]: '聯絡方式',
+  },
+  'orderitem': {
+    [Language.EN]: 'Order Item',
+    [Language.ZH_CN]: '订购商品',
+    [Language.ZH_TW]: '訂購商品',
+  },
+  'orderid': {
+    [Language.EN]: 'Order ID',
+    [Language.ZH_CN]: '订单编号',
+    [Language.ZH_TW]: '訂單編號',
+  },
+  'orderlookup': {
+    [Language.EN]: 'Order Lookup',
+    [Language.ZH_CN]: '订单查询',
+    [Language.ZH_TW]: '查詢訂單狀態',
+  },
+  'your.cart': {
+    [Language.EN]: 'Cart Checkout ',
+    [Language.ZH_CN]: '购物车结帐',
+    [Language.ZH_TW]: '購物車結帳',
+  },
 };
