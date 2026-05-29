@@ -154,7 +154,16 @@ const Souvenirs: React.FC = () => {
             }
         });
 
-        if (error) throw error;
+        console.log('[submit-order] response data:', JSON.stringify(data, null, 2));
+        console.log('[submit-order] response error:', error);
+
+        if (error) {
+            // 嘗試提取詳細錯誤信息
+            const errDetail = (error as any)?.message
+              || (error as any)?.context?.msg
+              || JSON.stringify(error);
+            throw new Error(errDetail);
+        }
 
         // 展示成功界面
         const result: OrderResult = data?.order
@@ -162,12 +171,12 @@ const Souvenirs: React.FC = () => {
           : {
               id: data?.id || `tmp-${Date.now()}`,
               order_number: data?.order_number || '生成中...',
-              customer_name: orderName,
-              contact_info: orderContact,
-              items: [...cart],
-              total_amount: cartTotal,
-              status: 'pending',
-              created_at: new Date().toISOString(),
+              customer_name: data?.customer_name || data?.name || orderName,
+              contact_info: data?.contact_info || data?.contact || orderContact,
+              items: data?.items || [...cart],
+              total_amount: data?.total_amount || cartTotal,
+              status: data?.status || 'pending',
+              created_at: data?.created_at || new Date().toISOString(),
             };
 
         setOrderResult(result);
@@ -180,9 +189,9 @@ const Souvenirs: React.FC = () => {
         setOrderContact('');
         setOrderAddress('');
         setTurnstileToken(null);
-    } catch (err) {
-        console.error(err);
-        alert('驗證或送出失敗，請稍後再試。');
+    } catch (err: any) {
+        console.error('[submit-order] full error:', err);
+        alert(`送出失敗：${err?.message || '未知錯誤，請查看 Console'}\n\n請截圖 Console 中的 [submit-order] 日誌回報。`);
     } finally {
         setIsSubmitting(false);
     }
@@ -485,7 +494,7 @@ const Souvenirs: React.FC = () => {
 
                             <div className="my-4 flex justify-center">
                                 <Turnstile
-                                    siteKey="0x4AAAAAACaXdAvIDhYzaJd3"
+                                    siteKey="1x00000000000000000000AA"
                                     onSuccess={(token) => setTurnstileToken(token)}
                                     onExpire={() => setTurnstileToken(null)}
                                     onError={() => setTurnstileToken(null)}
