@@ -21,9 +21,13 @@ do $$ declare t text; begin
     end if;
   end loop;
 end $$;
--- Keep the legacy phone column out of public/API responses.
-revoke select on public.contacts from anon, authenticated;
+-- Revoke broad default grants including TRUNCATE (which RLS does not cover),
+-- then grant only the operations used by the application. RLS still governs rows.
+revoke all on public.contacts, public.messages, public.memories, public.souvenirs, public.orders, public.site_settings from anon, authenticated, public;
+grant select on public.messages, public.memories, public.souvenirs to anon, authenticated;
 grant select(id, created_at, name, role, email, social) on public.contacts to anon, authenticated;
+grant insert, update, delete on public.contacts, public.messages, public.memories, public.souvenirs, public.orders to authenticated;
+grant select on public.orders to authenticated;
 create policy public_read_contacts on public.contacts for select to anon, authenticated using (true);
 create policy public_read_messages on public.messages for select to anon, authenticated using (not coalesce(is_hidden, false));
 create policy public_read_memories on public.memories for select to anon, authenticated using (true);
