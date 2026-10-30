@@ -1,6 +1,16 @@
 import { Language, TranslationDictionary } from '../types';
 
 export const TRANSLATIONS: TranslationDictionary = {
+  'gallery.pending': { [Language.EN]: 'Coming soon', [Language.ZH_CN]: '整理中，敬请期待', [Language.ZH_TW]: '整理中，敬請期待' },
+  'common.loading': { [Language.EN]: 'Loading…', [Language.ZH_CN]: '加载中…', [Language.ZH_TW]: '載入中…' },
+  'common.back': { [Language.EN]: 'Back', [Language.ZH_CN]: '返回', [Language.ZH_TW]: '返回' },
+  'common.error': { [Language.EN]: 'Unable to load. Please check your connection.', [Language.ZH_CN]: '加载失败，请检查网络连接。', [Language.ZH_TW]: '載入失敗，請檢查網路連線。' },
+  'memories.empty': { [Language.EN]: 'No stories yet.', [Language.ZH_CN]: '暂时还没有故事。', [Language.ZH_TW]: '暫時還沒有故事。' },
+  'memories.missing': { [Language.EN]: 'Story not found', [Language.ZH_CN]: '未找到这篇故事', [Language.ZH_TW]: '找不到這篇故事' },
+  'guestbook.empty': { [Language.EN]: 'No messages yet. Be the first to write something!', [Language.ZH_CN]: '还没有留言，来写下第一条吧！', [Language.ZH_TW]: '還沒有留言，來寫下第一則吧！' },
+  'common.verify': { [Language.EN]: 'Please complete the security check.', [Language.ZH_CN]: '请先完成安全验证。', [Language.ZH_TW]: '請先完成安全驗證。' },
+  'common.submitError': { [Language.EN]: 'Submission failed. Please try again.', [Language.ZH_CN]: '提交失败，请稍后重试。', [Language.ZH_TW]: '送出失敗，請稍後重試。' },
+  'common.sending': { [Language.EN]: 'Sending…', [Language.ZH_CN]: '提交中…', [Language.ZH_TW]: '送出中…' },
   // Navigation
   'nav.home': {
     [Language.EN]: 'Home',
@@ -41,7 +51,7 @@ export const TRANSLATIONS: TranslationDictionary = {
   // Home
   'home.title': {
     [Language.EN]: 'Time. Photography Club',
-    [Language.ZH_CN]: '時光攝影社',
+    [Language.ZH_CN]: '时光摄影社',
     [Language.ZH_TW]: '時光攝影社',
   },
   'home.subtitle': {
@@ -77,9 +87,9 @@ export const TRANSLATIONS: TranslationDictionary = {
     [Language.ZH_TW]: '雲端記憶',
   },
   'gallery.desc': {
-    [Language.EN]: 'Access our shared photo albums. Please keep these links private.',
-    [Language.ZH_CN]: '访问我们的共享相册。请保持這些链接的私密性。',
-    [Language.ZH_TW]: '訪問我們的共享相簿。請保持這些連結的私密性。',
+    [Language.EN]: 'Explore our shared albums. Access depends on each album’s sharing settings.',
+    [Language.ZH_CN]: '浏览共享相册，访问权限以各相册的分享设置为准。',
+    [Language.ZH_TW]: '瀏覽共享相簿，存取權限以各相簿的分享設定為準。',
   },
   'gallery.upload.title': {
     [Language.EN]: 'Contribute Photos',
@@ -102,27 +112,27 @@ export const TRANSLATIONS: TranslationDictionary = {
     [Language.ZH_TW]: '雲盤整理中',
   },
   'album.campus.desc': {
-    [Language.EN]: 'Daily moments in the classroom and hallway.',
+    [Language.EN]: 'This collection is being prepared.',
     [Language.ZH_CN]: '雲盤整理中',
     [Language.ZH_TW]: '雲盤整理中',
   },
   'album.sports': {
-    [Language.EN]: 'Sports Day',
-    [Language.ZH_CN]: '雲盤整理中',
-    [Language.ZH_TW]: '雲盤整理中',
+    [Language.EN]: 'Shared collection',
+    [Language.ZH_CN]: '共享相册',
+    [Language.ZH_TW]: '共享相簿',
   },
   'album.sports.desc': {
-    [Language.EN]: 'Sweat, tears, and victory.',
-    [Language.ZH_CN]: '雲盤整理中',
-    [Language.ZH_TW]: '雲盤整理中',
+    [Language.EN]: 'Browse the club’s shared OneDrive collection.',
+    [Language.ZH_CN]: '浏览社团的 OneDrive 共享照片。',
+    [Language.ZH_TW]: '瀏覽社團的 OneDrive 共享照片。',
   },
   'album.grad': {
-    [Language.EN]: 'Graduation Ceremony',
+    [Language.EN]: 'Coming soon',
     [Language.ZH_CN]: '雲盤整理中',
     [Language.ZH_TW]: '雲盤整理中',
   },
   'album.grad.desc': {
-    [Language.EN]: 'The final chapter.',
+    [Language.EN]: 'This collection is being prepared.',
     [Language.ZH_CN]: '雲盤整理中',
     [Language.ZH_TW]: '雲盤整理中',
   },
@@ -236,9 +246,9 @@ export const TRANSLATIONS: TranslationDictionary = {
     [Language.ZH_CN]: '加入购物车',
     [Language.ZH_TW]: '加入購物車',
   },
-  'empyt.cart': {
+  'empty.cart': {
     [Language.EN]: 'Cart is empty',
-    [Language.ZH_CN]: '加入购物车',
+    [Language.ZH_CN]: '购物车是空的',
     [Language.ZH_TW]: '購物車是空的',
   },
   'buy.contact':{
@@ -253,7 +263,7 @@ export const TRANSLATIONS: TranslationDictionary = {
   },
   'title.souvenirs':{
     [Language.EN]: 'Souvenirs',
-    [Language.ZH_CN]: '周邊紀念品',
+    [Language.ZH_CN]: '周边纪念品',
     [Language.ZH_TW]: '周邊紀念品',
   },
   'subtitle.souvenirs':{

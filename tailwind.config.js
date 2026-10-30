@@ -1,0 +1,1 @@
+export default { content: ['./index.html', './App.tsx', './components/**/*.{ts,tsx}', './pages/**/*.{ts,tsx}'], theme: { extend: { fontFamily: { serif: ['Georgia', 'Noto Serif TC', 'serif'], sans: ['Inter', 'system-ui', 'sans-serif'] }, colors: { primary: '#37564b', secondary: '#a96d48', accent: '#f3f1eb' } } }, plugins: [] };

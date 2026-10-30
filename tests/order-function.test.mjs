@@ -1,0 +1,12 @@
+import { readFile } from 'node:fs/promises';
+import { transform } from 'esbuild';
+import vm from 'node:vm';
+import { webcrypto } from 'node:crypto';
+import assert from 'node:assert/strict';
+let handler, stored;
+const products=[{id:'a',name:'Print',price:12.5,in_stock:true}];
+const db={from(table){return {select(){return {in:async()=>({data:products,error:null}),eq(_field,hash){return {maybeSingle:async()=>({data:stored?.lookup_hash===hash?{order_number:'ORD-1',status:'pending',created_at:'2026-01-01'}:null,error:null})}}}},insert(row){stored=row;return {select(){return {single:async()=>({data:{order_number:'ORD-1',status:'pending',created_at:'2026-01-01'},error:null})}}}}}}};
+const raw=await readFile(new URL('../backend/functions/submit-order.ts',import.meta.url),'utf8');const js=await transform(raw.replace(/^import .*\n/,''),{loader:'ts',format:'iife'});
+vm.runInNewContext(js.code,{Deno:{env:{get:()=> 'configured'},serve:f=>handler=f},createClient:()=>db,crypto:webcrypto,TextEncoder,Uint8Array,URLSearchParams,Request,Response,console,fetch:async()=>({json:async()=>({success:true})})});
+const call=body=>handler(new Request('https://example.test',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body)}));
+let response=await call({name:'A',contact:'B',address:'C',items:[{id:'a',price:0,quantity:2}],total_amount:0,turnstileToken:'token'});assert.equal(response.status,200);let result=await response.json();assert.equal(stored.total_amount,25);assert.equal(stored.shipping_address,'C');assert.match(result.lookupToken,/^T-[a-f0-9]{48}$/);assert.notEqual(stored.lookup_hash,result.lookupToken);response=await call({action:'lookup',lookupToken:result.lookupToken.toUpperCase()});let lookup=await response.json();assert.equal(lookup.order.order_number,'ORD-1');assert.equal(lookup.order.customer_name,undefined);response=await call({action:'lookup',lookupToken:'ORD-000001'});assert.equal(response.status,404);response=await call({name:'A',contact:'B',address:'C',items:[{id:'a',quantity:-1}],turnstileToken:'token'});assert.equal(response.status,400);console.log('Order function: server price, private lookup, and input validation passed.');
