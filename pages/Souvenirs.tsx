@@ -204,7 +204,7 @@ const Souvenirs: React.FC = () => {
     } catch (err) {
         console.error(err);
         setTurnstileToken(null); setVerificationKey(k => k + 1);
-        alert(tr('Verification or submission failed. Please try again.', '验证或提交失败，请稍后再试。', '驗證或送出失敗，請稍後再試。'));
+        alert(tr('We could not confirm the order. Contact the club before trying again to avoid duplicates.', '无法确认订单是否已提交。请先联系社团确认，避免重复下单。', '無法確認訂單是否已送出。請先聯絡社團確認，避免重複下單。'));
     } finally {
         setIsSubmitting(false);
     }
