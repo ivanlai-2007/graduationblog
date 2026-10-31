@@ -1,22 +1,21 @@
-import React, { useState, useEffect } from 'react';
-import { useLanguage } from '../contexts/LanguageContext';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { ArrowUpRight, BookOpen, Bookmark, Search, LoaderCircle } from 'lucide-react';
+import { useLanguage } from '../contexts/LanguageContext';
+import { useExperience } from '../contexts/ExperienceContext';
 import { supabase } from '../services/supabaseClient';
 import { Memory } from '../types';
-import { ArrowUpRight, BookOpen, LoaderCircle } from 'lucide-react';
 import PageHeading from '../components/PageHeading';
-import { Language } from '../types';
+import Reveal from '../components/Reveal';
+import { plainText, readingMinutes } from '../services/textUtils';
 
-const Memories: React.FC = () => {
-  const { t, language } = useLanguage();
-  const tr=(en:string,cn:string,tw:string)=>language===Language.EN?en:language===Language.ZH_CN?cn:tw;
-  const [memories, setMemories] = useState<Memory[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
-  async function load() { setLoading(true); const result = await supabase.from('memories').select('id,title,content,created_at,author').order('created_at',{ascending:false}); setError(!!result.error); if(result.data) setMemories(result.data as Memory[]); setLoading(false); }
-  useEffect(()=>{ void load(); },[]);
-  return <div className="page-surface"><div className="page-container narrow-page"><PageHeading eyebrow="WORDS & STORIES / 02" title={t('memories.title')} description={tr('A collection of stories from the people behind the lens.', '镜头背后的人，也有值得记录的故事。', '鏡頭背後的人，也有值得記錄的故事。')}/>
-    {loading ? <div className="page-state"><LoaderCircle className="animate-spin"/>{t('common.loading')}</div> : error ? <div className="page-state" role="alert">{t('common.error')}<button className="outline-button" onClick={load}>{tr('Try again','重试','重試')}</button></div> : memories.length === 0 ? <div className="page-state"><BookOpen/>{t('memories.empty')}</div> : <div className="story-list">{memories.map((m,i)=><Link to={`/memories/${m.id}`} className="story-row" key={m.id}><span className="story-number">{String(i+1).padStart(2,'0')}</span><div><div className="story-meta">{new Date(m.created_at).toLocaleDateString(language)} {m.author && ` / ${m.author}`}</div><h2>{m.title}</h2><p>{m.content.replace(/[#*`_\[\]]/g,'').slice(0,150)}</p><span className="text-link">{t('memories.readMore')} <ArrowUpRight size={16}/></span></div><ArrowUpRight className="story-arrow" size={22}/></Link>)}</div>}
+export default function Memories() {
+  const { t, language }=useLanguage(); const { saved, toggleSaved }=useExperience(); const tr=(en:string,cn:string,tw:string)=>language==='en'?en:language==='zh-TW'?tw:cn;
+  const [memories,setMemories]=useState<Memory[]>([]); const [loading,setLoading]=useState(true); const [error,setError]=useState(false); const [query,setQuery]=useState(''); const [savedOnly,setSavedOnly]=useState(false); const [sort,setSort]=useState('newest');
+  async function load(){setLoading(true);const {data,error}=await supabase.from('memories').select('id,title,content,created_at,author').order('created_at',{ascending:false});setError(!!error);if(data)setMemories(data as Memory[]);setLoading(false)}
+  useEffect(()=>{void load()},[]);
+  const filtered=useMemo(()=>memories.filter(m=>(!savedOnly||saved.includes(`story:${m.id}`))&&`${m.title} ${plainText(m.content)} ${m.author||''}`.toLowerCase().includes(query.toLowerCase())).sort((a,b)=>sort==='oldest'?Date.parse(a.created_at)-Date.parse(b.created_at):Date.parse(b.created_at)-Date.parse(a.created_at)),[memories,query,savedOnly,saved,sort]);
+  return <div className="page-surface"><div className="page-container narrow-page"><PageHeading eyebrow="02 / THE JOURNAL" title={tr('Between the frames.','镜头之外。','鏡頭之外。')} description={tr('Stories worth slowing down for. Find one, save it, return when you have a quiet moment.','有些故事，值得慢慢读。找到一篇，收藏起来，留给下一个安静的时刻。','有些故事，值得慢慢讀。找到一篇，收藏起來，留給下一個安靜的時刻。')}/><div className="journal-tools"><label className="search-field"><Search size={17}/><input aria-label={tr('Search stories','搜索故事','搜尋故事')} placeholder={tr('Search title, words, author…','搜索标题、内容或作者…','搜尋標題、內容或作者…')} value={query} onChange={e=>setQuery(e.target.value)}/></label><button className={`saved-filter ${savedOnly?'active':''}`} aria-pressed={savedOnly} onClick={()=>setSavedOnly(v=>!v)}><Bookmark size={15}/>{tr('Reading list','阅读清单','閱讀清單')}</button><select aria-label={tr('Sort stories','故事排序','故事排序')} value={sort} onChange={e=>setSort(e.target.value)}><option value="newest">{tr('Newest first','最新在前','最新在前')}</option><option value="oldest">{tr('Oldest first','最早在前','最早在前')}</option></select></div>
+    {loading?<div className="page-state"><LoaderCircle className="animate-spin"/>{t('common.loading')}</div>:error?<div className="page-state" role="alert">{t('common.error')}<button className="outline-button" onClick={load}>{tr('Try again','重试','重試')}</button></div>:<><div className="results-meta"><span>{String(filtered.length).padStart(2,'0')} {tr('STORIES','篇故事','篇故事')}</span><span>{tr('Reading list saved on this browser','阅读清单仅保存在当前浏览器','閱讀清單僅儲存在目前瀏覽器')}</span></div>{filtered.length===0?<div className="page-state"><BookOpen/><p>{query?tr('No stories match your search.','没有找到相关故事。','沒有找到相關故事。'):savedOnly?tr('Your reading list is empty.','阅读清单还是空的。','閱讀清單還是空的。'):t('memories.empty')}</p></div>:<div className="story-list">{filtered.map((m,i)=><Reveal key={m.id} delay={Math.min(i,4)*70}><article className="story-row"><span className="story-number">{String(i+1).padStart(2,'0')}</span><Link to={`/memories/${m.id}`} className="story-content"><div className="story-meta">{new Date(m.created_at).toLocaleDateString(language)} <span>/ {readingMinutes(m.content)} MIN READ</span></div><h2>{m.title}</h2><p>{plainText(m.content).slice(0,145)}</p><span className="text-link">{t('memories.readMore')}<ArrowUpRight size={16}/></span></Link><button className={`story-save ${saved.includes(`story:${m.id}`)?'is-saved':''}`} onClick={()=>toggleSaved(`story:${m.id}`)} aria-pressed={saved.includes(`story:${m.id}`)} aria-label={tr('Save to reading list','加入阅读清单','加入閱讀清單')}><Bookmark size={20} fill={saved.includes(`story:${m.id}`)?'currentColor':'none'}/></button></article></Reveal>)}</div>}</>}
   </div></div>;
-};
-export default Memories;
+}

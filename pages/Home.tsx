@@ -1,31 +1,32 @@
-import React from 'react';
+import React, { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowDownRight, ArrowRight, Aperture, BookOpen, Image, MessageCircle } from 'lucide-react';
+import { ArrowDown, ArrowUpRight, ChevronLeft, ChevronRight, Plus } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
-import { Language } from '../types';
+import { useExperience } from '../contexts/ExperienceContext';
+import { EDITORIAL_FRAMES } from '../constants/editorial';
+import Reveal from '../components/Reveal';
+import FrameCard from '../components/FrameCard';
+const Lightbox = lazy(() => import('../components/Lightbox'));
+const LatestStories = lazy(() => import('../components/LatestStories'));
 
-const Home: React.FC = () => {
-  const { t, language } = useLanguage();
-  const copy = {
-    [Language.EN]: { eyebrow: 'A PHOTOGRAPHY CLUB · EST. 2006', title: 'Hold on to the moments.', intro: 'Through our lenses, ordinary days become stories worth keeping.', explore: 'Explore the archive', note: 'A place for the people, photographs and stories that make up Time.', section: 'A living archive', sectionSub: 'Every frame has a story. Find yours here.', gallery: 'Photographs & shared albums', memories: 'Stories from our community', guestbook: 'Leave a note for the future', more: 'Explore', footer: 'Made of moments, together.' },
-    [Language.ZH_CN]: { eyebrow: '时光摄影社 · 始于 2006', title: '把每个瞬间，留给时光。', intro: '透过镜头，平凡的日子也成为值得珍藏的故事。', explore: '探索我们的记录', note: '这里收藏时光摄影社的人、照片与故事。', section: '让记忆继续生长', sectionSub: '每一帧都有故事，从这里找寻属于你的那一刻。', gallery: '照片与共享相册', memories: '来自社团的故事', guestbook: '给未来留一句话', more: '探索', footer: '一起收藏，属于我们的时光。' },
-    [Language.ZH_TW]: { eyebrow: '時光攝影社 · 始於 2006', title: '把每個瞬間，留給時光。', intro: '透過鏡頭，平凡的日子也成為值得珍藏的故事。', explore: '探索我們的記錄', note: '這裡收藏時光攝影社的人、照片與故事。', section: '讓記憶繼續生長', sectionSub: '每一幀都有故事，從這裡找尋屬於你的那一刻。', gallery: '照片與共享相簿', memories: '來自社團的故事', guestbook: '給未來留一句話', more: '探索', footer: '一起收藏，屬於我們的時光。' },
-  }[language];
-  const links = [
-    {to:'/gallery', number:'01', icon:Image, title:t('nav.gallery'), desc:copy.gallery},
-    {to:'/memories', number:'02', icon:BookOpen, title:t('nav.memories'), desc:copy.memories},
-    {to:'/guestbook', number:'03', icon:MessageCircle, title:t('nav.guestbook'), desc:copy.guestbook},
-  ];
-  return <div className="home-page">
-    <section className="home-hero">
-      <div className="hero-grain" aria-hidden="true" />
-      <div className="home-hero-inner">
-        <div className="hero-copy"><p className="eyebrow">{copy.eyebrow}</p><h1>{copy.title}</h1><p className="hero-intro">{copy.intro}</p><Link className="hero-button" to="/gallery">{copy.explore}<ArrowRight size={18}/></Link></div>
-        <div className="hero-art" aria-hidden="true"><div className="lens-ring lens-outer"><div className="lens-ring lens-middle"><div className="lens-core"><Aperture size={72} strokeWidth={0.7}/></div></div></div><span className="hero-art-label">TIME. / PHOTOGRAPHY</span><span className="hero-art-index">01 — 06</span></div>
-      </div>
-      <div className="hero-bottom"><span>{copy.note}</span><ArrowDownRight size={20}/></div>
-    </section>
-    <section className="home-archive"><div className="archive-heading"><div><p className="eyebrow">THE TIME ARCHIVE / 01</p><h2>{copy.section}</h2></div><p>{copy.sectionSub}</p></div><div className="archive-grid">{links.map(({to,number,icon:Icon,title,desc})=><Link className="archive-card" to={to} key={to}><div className="card-top"><span>{number} / 03</span><Icon size={24} strokeWidth={1.3}/></div><div><h3>{title}</h3><p>{desc}</p></div><span className="card-link">{copy.more} <ArrowRight size={16}/></span></Link>)}</div><p className="archive-signoff">{copy.footer} <span>TIME. PHOTOGRAPHY CLUB</span></p></section>
+export default function Home() {
+  const { language, t } = useLanguage(); const { motion } = useExperience(); const [cover, setCover] = useState(0); const [viewer, setViewer] = useState<number | null>(null); const parallax = useRef<HTMLDivElement>(null); const closeViewer = useCallback(() => setViewer(null), []);
+  const en = language === 'en'; const tw = language === 'zh-TW';
+  const tr = (english:string, cn:string, tc:string) => en ? english : tw ? tc : cn;
+  useEffect(() => {
+    if (!motion || !parallax.current) return;
+    let raf = 0;
+    const update = () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(() => { const rect = parallax.current?.getBoundingClientRect(); if (rect) parallax.current?.style.setProperty('--photo-drift', `${Math.max(-45, Math.min(45, (window.innerHeight / 2 - rect.top - rect.height / 2) * .10))}px`); }); };
+    window.addEventListener('scroll', update, { passive: true }); update(); return () => { cancelAnimationFrame(raf); window.removeEventListener('scroll', update); };
+  }, [motion]);
+  return <div className="editorial-home">
+    <section className="cover-section"><div className="cover-topline"><span>INDEPENDENT EYES. SHARED MEMORIES.</span><span>EST. 2006 — STILL LOOKING</span></div><div className="cover-layout"><div className="cover-copy"><p className="eyebrow"><i/> {tr('A PLACE FOR EVERY WAY OF SEEING','每一种目光，都值得被看见','每一種目光，都值得被看見')}</p><h1><span className="title-line"><span>{tr('Let the','让目光，','讓目光，')}</span></span><span className="title-line"><em>{tr('moment stay.','停留。','停留。')}</em></span></h1><p className="cover-description">{tr('We collect the ordinary, the fleeting, and everything that makes us feel. This is Time.','我们收藏日常、偶然，以及那些让人心动的瞬间。这里是时光摄影社。','我們收藏日常、偶然，以及那些讓人心動的瞬間。這裡是時光攝影社。')}</p><Link className="round-link" to="/gallery"><span>{tr('Explore the archive','走进影像','走進影像')}</span><span className="round-arrow"><ArrowUpRight size={23}/></span></Link><div className="cover-bottom"><span>TIME. PHOTOGRAPHY CLUB</span><button onClick={() => document.getElementById('selected-frames')?.scrollIntoView({ behavior: motion ? 'smooth' : 'instant' })} aria-label={tr('Scroll to editorial images','浏览编辑影像','瀏覽編輯影像')}><ArrowDown size={18}/></button></div></div>
+      <div className="cover-visual"><div className="cover-image" key={cover}><img src={EDITORIAL_FRAMES[cover].src} alt={EDITORIAL_FRAMES[cover].description[language]} fetchPriority="high" width={1536} height={1024}/></div><span className="cover-image-label">AI EDITORIAL / {String(cover + 1).padStart(2,'0')}</span><div className="cover-caption"><button onClick={() => setViewer(cover)}><Plus size={17}/>{EDITORIAL_FRAMES[cover].title[language]}</button><div className="cover-controls"><button onClick={() => setCover(i => (i + 2) % 3)} aria-label={tr('Previous cover','上一张封面','上一張封面')}><ChevronLeft size={18}/></button><span>{String(cover+1).padStart(2,'0')} / 03</span><button onClick={() => setCover(i => (i + 1) % 3)} aria-label={tr('Next cover','下一张封面','下一張封面')}><ChevronRight size={18}/></button></div></div></div>
+    </div></section>
+    <section className="intro-section page-container"><Reveal className="intro-label"><span className="section-index">01 / THE WAY WE SEE</span><span className="red-asterisk" aria-hidden="true">✳</span></Reveal><Reveal delay={120}><h2>{tr('Ordinary days.','平凡的日常，','平凡的日常，')}<br/><em>{tr('Extraordinary ways of seeing.','也有不平凡的光。','也有不平凡的光。')}</em></h2><p>{tr('A camera gives us a reason to slow down. From the people beside us to the light at the edge of a window, we keep looking — and keep a little of what we find.','相机给了我们一个慢下来的理由。从身边的人，到窗边的一束光，我们始终在寻找，也把遇见的美好留下一点。','相機給了我們一個慢下來的理由。從身邊的人，到窗邊的一束光，我們始終在尋找，也把遇見的美好留下一點。')}</p><Link className="text-link" to="/contact">{tr('Meet the people behind the lens','认识镜头背后的人','認識鏡頭背後的人')}<ArrowUpRight size={17}/></Link></Reveal></section>
+    <section className="selected-section page-container" id="selected-frames"><Reveal className="section-heading"><div><span className="section-index">02 / EDITORIAL STUDIES</span><h2>{tr('A pause in the everyday.','给日常，一个特写。','給日常，一個特寫。')}</h2></div><Link className="text-link" to="/gallery">{tr('View all images','查看影像选集','查看影像選集')}<ArrowUpRight size={18}/></Link></Reveal><div className="selected-grid">{[EDITORIAL_FRAMES[1],EDITORIAL_FRAMES[2]].map((frame,i) => <Reveal key={frame.id} delay={i*160}><FrameCard frame={frame} index={i+1} onOpen={() => setViewer(i+1)}/></Reveal>)}</div><p className="image-disclosure">{tr('Original AI editorial studies for this edition. Club photographs live in the shared albums.','本期为原创 AI 编辑视觉示意；社团真实照片请见共享相册。','本期為原創 AI 編輯視覺示意；社團真實照片請見共享相簿。')}</p></section>
+    <section className="journal-section"><div className="page-container journal-layout"><Reveal><span className="section-index">03 / THE JOURNAL</span><h2>{tr('Beyond','按下快门，','按下快門，')}<br/><em>{tr('the frame.','然后呢？','然後呢？')}</em></h2><p>{tr('The people, the stories, and all the things a photograph cannot quite hold.','照片之外，还有想说的话、想记住的人，和那些没有被镜头收进的故事。','照片之外，還有想說的話、想記住的人，和那些沒有被鏡頭收進的故事。')}</p><Link className="text-link" to="/memories">{t('home.cta.memories')}<ArrowUpRight size={18}/></Link></Reveal><Reveal delay={100}><Suspense fallback={<p className="editorial-empty">{t('common.loading')}</p>}><LatestStories/></Suspense></Reveal></div></section>
+    <section className="closing-section page-container"><Reveal><div className="closing-photo" ref={parallax}><img src="/editorial/red-hour.jpg" alt={EDITORIAL_FRAMES[0].description[language]} loading="lazy" width={1536} height={1024}/><span>AI EDITORIAL / THE RED HOUR</span></div></Reveal><Reveal className="closing-copy" delay={160}><p className="section-index">04 / STAY IN THE PICTURE</p><h2>{tr('There’s a place','下一帧，','下一幀，')}<br/><em>{tr('for your point of view.','也想有你。','也想有你。')}</em></h2><p>{tr('Share your photographs, find familiar faces, or leave a note for the days ahead.','分享你的照片，找到熟悉的面孔，或是给未来留下一句问候。','分享你的照片，找到熟悉的面孔，或是給未來留下一句問候。')}</p><Link className="round-link" to="/gallery?contribute=1"><span>{t('gallery.upload.title')}</span><span className="round-arrow"><ArrowUpRight size={22}/></span></Link></Reveal></section>
+    {viewer !== null && <Suspense fallback={null}><Lightbox frames={EDITORIAL_FRAMES} initialIndex={viewer} onClose={closeViewer}/></Suspense>}
   </div>;
-};
-export default Home;
+}

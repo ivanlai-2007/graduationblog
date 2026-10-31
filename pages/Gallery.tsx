@@ -1,20 +1,25 @@
-import React from 'react';
+import React, { lazy, Suspense, useCallback, useEffect, useState } from 'react';
+import { useLocation } from 'react-router-dom';
+import { ArrowUpRight, Heart, Cloud, Upload, LockKeyhole } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
-import { Language } from '../types';
-import { ArrowUpRight, Cloud, Upload, LockKeyhole } from 'lucide-react';
+import { useExperience } from '../contexts/ExperienceContext';
+import { EDITORIAL_FRAMES, FRAME_CATEGORIES, type EditorialFrame } from '../constants/editorial';
 import PageHeading from '../components/PageHeading';
+import FrameCard from '../components/FrameCard';
+import Reveal from '../components/Reveal';
+const Lightbox = lazy(() => import('../components/Lightbox'));
 
-const Gallery: React.FC = () => {
-  const { t, language } = useLanguage();
-  const tr = (en:string, cn:string, tw:string) => language === Language.EN ? en : language === Language.ZH_CN ? cn : tw;
-  const albums = [
-    { title: t('album.sports'), description: t('album.sports.desc'), platform:'OneDrive', link:'https://1drv.ms/f/c/3e1d9ee25a5a5c48/IgBF9bd5NVTwQ5zQ5SpeyMsXAdrq40_7idbryVSaNE0NdpA?e=lNhK9R' },
-    { title: tr('More collections', '更多相册', '更多相簿'), description: tr('This collection is being prepared.', '相册正在整理中。', '相簿正在整理中。'), platform:tr('Coming soon', '整理中', '整理中'), link:'' },
-  ];
-  return <div className="page-surface"><div className="page-container"><PageHeading eyebrow="THE ARCHIVE / 01" title={t('gallery.title')} description={t('gallery.desc')} />
-    <div className="gallery-grid">{albums.map((album, i) => <article className="gallery-card" key={album.platform}><div className={`gallery-art gallery-art-${i}`}><span>TIME. ARCHIVE</span><Cloud size={56} strokeWidth={.8}/><span>0{i+1} / COLLECTION</span></div><div className="gallery-body"><span className="micro-label">{album.platform}</span><h2>{album.title}</h2><p>{album.description}</p>{album.link ? <a href={album.link} target="_blank" rel="noopener noreferrer" className="text-link">{t('btn.access')} <ArrowUpRight size={17}/></a> : <span className="muted-label">{t('gallery.pending')}</span>}</div></article>)}</div>
-    <section className="contribute-panel"><div className="contribute-icon"><Upload size={24}/></div><div><p className="eyebrow">CONTRIBUTE / 02</p><h2>{t('gallery.upload.title')}</h2><p>{t('gallery.upload.desc')}</p></div><a className="outline-button" href="https://c.wss.pet/s/j5662tnn15f" target="_blank" rel="noopener noreferrer">{t('gallery.upload.linkText')} <ArrowUpRight size={16}/></a></section>
-    <p className="privacy-note"><LockKeyhole size={15}/>{tr('Shared albums may require permission from their owners.', '共享相册可能需要所有者授权。', '共享相簿可能需要擁有者授權。')}</p>
+export default function Gallery() {
+  const { t, language } = useLanguage(); const { saved } = useExperience(); const location = useLocation();
+  const tr = (en:string, cn:string, tw:string) => language==='en'?en:language==='zh-TW'?tw:cn;
+  const [tab, setTab] = useState('images'); const [category,setCategory] = useState('all'); const [savedOnly,setSavedOnly] = useState(false); const [viewer,setViewer] = useState<{ frames: EditorialFrame[]; index: number }|null>(null); const closeViewer = useCallback(() => setViewer(null), []);
+  const frames = EDITORIAL_FRAMES.filter(frame => (category==='all'||frame.category===category) && (!savedOnly||saved.includes(`frame:${frame.id}`)));
+  useEffect(() => { if (new URLSearchParams(location.search).get('contribute') === '1') { setTab('albums'); requestAnimationFrame(() => document.getElementById('contribute')?.scrollIntoView({behavior:'instant',block:'center'})); } }, [location.search]);
+  const albums = [{ title:t('album.sports'), description:t('album.sports.desc'), platform:'OneDrive', link:'https://1drv.ms/f/c/3e1d9ee25a5a5c48/IgBF9bd5NVTwQ5zQ5SpeyMsXAdrq40_7idbryVSaNE0NdpA?e=lNhK9R' },{ title:tr('More collections','更多相册','更多相簿'), description:tr('Our shared collections are being organised.','共享相册正在整理中。','共享相簿正在整理中。'), platform:tr('COMING SOON','整理中','整理中'), link:'' }];
+  return <div className="page-surface"><div className="page-container"><PageHeading eyebrow="01 / THE VISUAL ARCHIVE" title={tr('A way of seeing.','目光所及。','目光所及。')} description={tr('Explore the editorial studies, or open the club’s shared photo albums.','浏览编辑影像练习，或前往社团的真实共享相册。','瀏覽編輯影像練習，或前往社團的真實共享相簿。')}/>
+    <div className="section-tabs" role="tablist" onKeyDown={event => { if (event.key === 'ArrowRight' || event.key === 'ArrowLeft') { event.preventDefault(); const next = tab === 'images' ? 'albums' : 'images'; setTab(next); document.getElementById(`tab-${next}`)?.focus(); } }} aria-label={tr('Gallery sections','相册栏目','相簿欄目')}><button role="tab" id="tab-images" tabIndex={tab==='images'?0:-1} aria-controls="panel-images" aria-selected={tab==='images'} onClick={() => setTab('images')}>{tr('Editorial images','编辑影像','編輯影像')}<span>03</span></button><button role="tab" id="tab-albums" tabIndex={tab==='albums'?0:-1} aria-controls="panel-albums" aria-selected={tab==='albums'} onClick={() => setTab('albums')}>{tr('Shared albums','共享相册','共享相簿')}<Cloud size={15}/></button></div>
+    {tab==='images'?<div role="tabpanel" id="panel-images" aria-labelledby="tab-images"><div className="filter-bar"><div className="filter-pills">{['all','space','everyday','light'].map(key => <button key={key} aria-pressed={category===key} className={category===key?'active':''} onClick={() => setCategory(key)}>{key==='all'?tr('All images','全部影像','全部影像'):FRAME_CATEGORIES[key as keyof typeof FRAME_CATEGORIES][language]}</button>)}</div><button className={`saved-filter ${savedOnly?'active':''}`} onClick={() => setSavedOnly(v=>!v)} aria-pressed={savedOnly}><Heart size={15} fill={savedOnly?'currentColor':'none'}/>{tr('Saved','我的收藏','我的收藏')}<span>{EDITORIAL_FRAMES.filter(f=>saved.includes(`frame:${f.id}`)).length}</span></button></div><p className="collection-note">{tr('AI editorial studies · Created for this edition · Saved on this browser only','AI 编辑视觉示意 · 为本期设计创作 · 收藏仅保存在当前浏览器','AI 編輯視覺示意 · 為本期設計創作 · 收藏僅儲存在目前瀏覽器')}</p><div className="gallery-frames">{frames.map((frame,i)=><Reveal key={frame.id} delay={i*100}><FrameCard frame={frame} index={EDITORIAL_FRAMES.indexOf(frame)} onOpen={() => setViewer({ frames, index: i })}/></Reveal>)}</div>{frames.length===0&&<div className="page-state"><Heart/><p>{tr('Nothing saved in this selection yet. Tap a heart to keep an image.','这个分类还没有收藏，点击心形留住喜欢的影像。','這個分類還沒有收藏，點擊心形留住喜歡的影像。')}</p><button className="text-link" onClick={()=>{setSavedOnly(false);setCategory('all')}}>{tr('Explore all images','浏览全部影像','瀏覽全部影像')}<ArrowUpRight size={16}/></button></div>}</div>:<div role="tabpanel" id="panel-albums" aria-labelledby="tab-albums"><div className="album-list">{albums.map((album,i)=><Reveal key={album.platform} delay={i*100}><article className="album-row"><span className="album-no">0{i+1}</span><div className="album-symbol"><Cloud strokeWidth={1} size={35}/></div><div className="album-info"><span className="micro-label">{album.platform}</span><h2>{album.title}</h2><p>{album.description}</p></div>{album.link?<a className="circle-link" href={album.link} target="_blank" rel="noreferrer" aria-label={`${t('btn.access')} · ${album.platform}`}><ArrowUpRight/></a>:<span className="muted-label">{t('gallery.pending')}</span>}</article></Reveal>)}</div><p className="privacy-note"><LockKeyhole size={14}/>{tr('Access to shared albums follows their owners’ permissions.','共享相册的访问权限以所有者设置为准。','共享相簿的存取權限以所有者設定為準。')}</p></div>}
+    <Reveal><section className="contribute-panel" id="contribute"><span className="contribute-icon"><Upload size={26} strokeWidth={1.3}/></span><div><span className="section-index">MAKE IT A SHARED MEMORY</span><h2>{t('gallery.upload.title')}</h2><p>{t('gallery.upload.desc')}</p></div><a className="circle-link" href="https://c.wss.pet/s/j5662tnn15f" target="_blank" rel="noreferrer" aria-label={t('gallery.upload.linkText')}><ArrowUpRight size={25}/></a></section></Reveal>
+    {viewer!==null&&<Suspense fallback={null}><Lightbox frames={viewer.frames} initialIndex={viewer.index} onClose={closeViewer}/></Suspense>}
   </div></div>;
-};
-export default Gallery;
+}

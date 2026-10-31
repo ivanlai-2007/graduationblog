@@ -1,3 +1,6 @@
+import '@fontsource-variable/dm-sans';
+import '@fontsource/cormorant-garamond/latin-400.css';
+import '@fontsource/cormorant-garamond/latin-400-italic.css';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';

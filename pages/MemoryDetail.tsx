@@ -1,84 +1,26 @@
-import React, { useState, useEffect } from 'react';
-import { useLanguage } from '../contexts/LanguageContext';
-import { useParams, Link } from 'react-router-dom';
-import { supabase } from '../services/supabaseClient';
-import { Memory } from '../types';
+import React, { useEffect, useRef, useState } from 'react';
+import { Link, useParams } from 'react-router-dom';
 import Markdown from 'react-markdown';
+import { ArrowLeft, ArrowUpRight, Bookmark, Check, Link2, Minus, Plus } from 'lucide-react';
+import { useLanguage } from '../contexts/LanguageContext';
+import { useExperience } from '../contexts/ExperienceContext';
+import { supabase } from '../services/supabaseClient';
 import { isManagedImage } from '../services/imagePolicy';
-import { ArrowLeft, Calendar, User, Loader2 } from 'lucide-react';
+import { readingMinutes } from '../services/textUtils';
+import { Memory } from '../types';
 
-const MemoryDetail: React.FC = () => {
-  const { id } = useParams();
-  const { t, language } = useLanguage();
-  const [memory, setMemory] = useState<Memory | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    if (id) fetchMemory(id);
-  }, [id]);
-
-  const fetchMemory = async (memId: string) => {
-    setIsLoading(true);
-    const { data } = await supabase
-      .from('memories')
-      .select('*')
-      .eq('id', memId)
-      .single();
-    
-    if (data) setMemory(data as Memory);
-    setIsLoading(false);
-  };
-
-  if (isLoading) {
-    return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50">
-            <Loader2 size={40} className="animate-spin text-primary" />
-        </div>
-    );
-  }
-
-  if (!memory) {
-      return (
-          <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50">
-              <h2 className="text-2xl font-bold text-gray-700 mb-4">{t('memories.missing')}</h2>
-              <Link to="/memories" className="text-primary hover:underline">{t('common.back')}</Link>
-          </div>
-      )
-  }
-
-  return (
-    <div className="bg-gray-50 min-h-screen py-12">
-      <div className="max-w-3xl mx-auto px-4">
-        <Link to="/memories" className="inline-flex items-center gap-2 text-gray-500 hover:text-primary mb-8 transition-colors">
-            <ArrowLeft size={16} /> {t('common.back')}
-        </Link>
-
-        <article className="bg-white p-8 md:p-12 rounded-2xl shadow-sm border border-gray-100">
-            <header className="mb-10 text-center border-b border-gray-100 pb-8">
-                <h1 className="font-serif text-3xl md:text-5xl font-bold text-gray-900 mb-6 leading-tight">
-                    {memory.title}
-                </h1>
-                <div className="flex items-center justify-center gap-6 text-sm text-gray-500">
-                    <span className="flex items-center gap-1">
-                        <Calendar size={14} />
-                        {new Date(memory.created_at).toLocaleDateString(language)}
-                    </span>
-                    {memory.author && (
-                        <span className="flex items-center gap-1">
-                            <User size={14} />
-                            {memory.author}
-                        </span>
-                    )}
-                </div>
-            </header>
-
-            <div className="prose prose-lg prose-blue max-w-none font-serif text-gray-700">
-                <Markdown components={{img: ({src, alt}) => src && isManagedImage(src) ? <img src={src} alt={alt || ""} loading="lazy" /> : null}}>{memory.content}</Markdown>
-            </div>
-        </article>
-      </div>
-    </div>
-  );
-};
-
-export default MemoryDetail;
+export default function MemoryDetail() {
+  const { id }=useParams(); const { t, language }=useLanguage(); const { saved,toggleSaved }=useExperience(); const tr=(en:string,cn:string,tw:string)=>language==='en'?en:language==='zh-TW'?tw:cn;
+  const [memory,setMemory]=useState<Memory|null>(null); const [loading,setLoading]=useState(true); const [failed,setFailed]=useState(false); const [copied,setCopied]=useState(false); const [copyFailed,setCopyFailed]=useState(false);
+  const [size,setSize]=useState(()=>{try{const value=Number(localStorage.getItem('time-reading-size'));return [18,20,22,24].includes(value)?value:20}catch{return 20}}); const article=useRef<HTMLElement>(null); const progress=useRef<HTMLDivElement>(null); const copyTimer=useRef<ReturnType<typeof setTimeout>|null>(null);
+  useEffect(()=>{let current=true;setMemory(null);setLoading(true);setFailed(false);supabase.from('memories').select('id,title,content,created_at,author').eq('id',id).maybeSingle().then(({data,error})=>{if(!current)return;setMemory(data as Memory|null);setFailed(!!error);setLoading(false)});return()=>{current=false}},[id]);
+  useEffect(()=>{if(memory)document.title=`${memory.title} — Time.`},[memory]);
+  useEffect(()=>{try{localStorage.setItem('time-reading-size',String(size))}catch{}},[size]);
+  useEffect(()=>{let raf=0;const update=()=>{cancelAnimationFrame(raf);raf=requestAnimationFrame(()=>{const node=article.current;if(!node)return;const rect=node.getBoundingClientRect();const amount=Math.max(0,Math.min(1,(window.innerHeight*.2-rect.top)/Math.max(1,rect.height-window.innerHeight*.6)));if(progress.current)progress.current.style.transform=`scaleX(${amount})`})};window.addEventListener('scroll',update,{passive:true});window.addEventListener('resize',update);update();return()=>{cancelAnimationFrame(raf);window.removeEventListener('scroll',update);window.removeEventListener('resize',update)}},[memory,size]);
+  useEffect(()=>()=>{if(copyTimer.current)clearTimeout(copyTimer.current)},[]);
+  async function copy(){try{await navigator.clipboard.writeText(window.location.href);setCopied(true);setCopyFailed(false);if(copyTimer.current)clearTimeout(copyTimer.current);copyTimer.current=setTimeout(()=>setCopied(false),2200)}catch{setCopyFailed(true)}}
+  if(loading)return <div className="page-surface"><div className="page-container page-state">{t('common.loading')}</div></div>;
+  if(!memory)return <div className="page-surface"><div className="page-container page-state"><h1>{failed?t('common.error'):t('memories.missing')}</h1><Link className="text-link" to="/memories">{t('common.back')}<ArrowUpRight size={16}/></Link></div></div>;
+  const liked=saved.includes(`story:${memory.id}`);
+  return <div className="reading-page"><div className="reading-progress" ref={progress} aria-hidden="true"/><div className="page-container"><div className="article-top"><Link className="back-link" to="/memories"><ArrowLeft size={16}/>{tr('The journal','回到回忆录','回到回憶錄')}</Link><span className="section-index">TIME. / WORDS & MEMORIES</span></div><header className="article-heading"><span className="micro-label">{new Date(memory.created_at).toLocaleDateString(language,{year:'numeric',month:'long',day:'numeric'})} / {readingMinutes(memory.content)} MIN READ</span><h1>{memory.title}</h1><p>{memory.author||'Time. Photography Club'}</p></header><div className="reading-toolbar"><span>{tr('SETTLE IN. READ SLOWLY.','慢一点，让故事留久一点。','慢一點，讓故事留久一點。')}</span><div><button disabled={size<=18} onClick={()=>setSize(s=>s-2)} aria-label={tr('Smaller text','缩小字号','縮小字級')}><Minus size={15}/></button><span>Aa</span><button disabled={size>=24} onClick={()=>setSize(s=>s+2)} aria-label={tr('Larger text','放大字号','放大字級')}><Plus size={15}/></button><i/><button onClick={()=>toggleSaved(`story:${memory.id}`)} aria-pressed={liked} aria-label={tr('Save story','收藏故事','收藏故事')}><Bookmark size={17} fill={liked?'currentColor':'none'}/></button><button onClick={copy} aria-label={tr('Copy story link','复制故事链接','複製故事連結')}>{copied?<Check size={17}/>:<Link2 size={17}/>}</button></div></div>{(copied||copyFailed)&&<p className="copy-status" role="status">{copied?tr('Link copied.','链接已复制。','連結已複製。'):tr('Unable to copy. Use the address bar to share this story.','无法复制，请从地址栏分享链接。','無法複製，請從網址列分享連結。')}</p>}<article ref={article} className="article-prose" style={{fontSize:size}}><Markdown components={{h1: ({children}) => <h2>{children}</h2>, img:({src,alt})=>src&&isManagedImage(src)?<img src={src} alt={alt||''} loading="lazy"/>:null}}>{memory.content}</Markdown></article><div className="article-end"><span className="red-asterisk">✳</span><p>{tr('Thank you for staying a while.','谢谢你，在这里停留。','謝謝你，在這裡停留。')}</p><Link className="text-link" to="/memories">{tr('More stories','继续阅读','繼續閱讀')}<ArrowUpRight size={17}/></Link></div></div></div>;
+}

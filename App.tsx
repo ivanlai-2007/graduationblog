@@ -3,6 +3,7 @@ import { HashRouter, Routes, Route } from 'react-router-dom';
 import { LanguageProvider } from './contexts/LanguageContext';
 import { SpeedInsights } from '@vercel/speed-insights/react';
 import Layout from './components/Layout';
+import { ExperienceProvider } from './contexts/ExperienceContext';
 import Home from './pages/Home';
 const Gallery = lazy(() => import('./pages/Gallery'));
 const Guestbook = lazy(() => import('./pages/Guestbook'));
@@ -14,7 +15,7 @@ const Souvenirs = lazy(() => import('./pages/Souvenirs'));
 
 const App: React.FC = () => {
   return (
-    <LanguageProvider>
+    <LanguageProvider><ExperienceProvider>
       <HashRouter>
         <Suspense fallback={<div className="p-12 text-center" role="status">Loading…</div>}><Routes>
           <Route path="/" element={<Layout />}>
@@ -30,7 +31,7 @@ const App: React.FC = () => {
         </Routes></Suspense>
       </HashRouter>
       <SpeedInsights />
-    </LanguageProvider>
+    </ExperienceProvider></LanguageProvider>
   );
 };
 

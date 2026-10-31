@@ -1,3 +1,4 @@
+import { useExperience } from '../contexts/ExperienceContext';
 import React, { useState, useEffect, useMemo } from 'react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { Language } from '../types';
@@ -44,6 +45,7 @@ const ORDER_STATUS_MAP: Record<OrderStatus, { label: string; icon: React.ReactNo
 
 const Souvenirs: React.FC = () => {
   const { t, language } = useLanguage();
+  const { motion } = useExperience();
   const tr = (en: string, cn: string, tw: string) => language === Language.EN ? en : language === Language.ZH_CN ? cn : tw;
   const localName = (item: SouvenirItem) => (language === Language.EN ? item.name_en : language === Language.ZH_CN ? item.name_zh_cn : item.name_zh_tw) || item.name;
   const localDescription = (item: SouvenirItem) => (language === Language.EN ? item.description_en : language === Language.ZH_CN ? item.description_zh_cn : item.description_zh_tw) || item.description;
@@ -269,7 +271,7 @@ const Souvenirs: React.FC = () => {
                   className={`px-6 py-3 rounded-xl font-bold text-sm text-white transition-all ${
                     isLooking || !lookupId.trim()
                       ? 'bg-gray-300 cursor-not-allowed'
-                      : 'bg-primary hover:bg-blue-800 active:scale-95 shadow-md'
+                      : 'bg-primary hover:bg-primary/90 active:scale-95 shadow-md'
                   }`}
                 >
                   {isLooking ? tr('Searching…', '查询中…', '查詢中…') : tr('Search', '查询', '查詢')}
@@ -339,11 +341,11 @@ const Souvenirs: React.FC = () => {
             </div>
 
             {/* 商品展示網格 */}
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="catalog-grid grid md:grid-cols-2 lg:grid-cols-3 gap-8">
               {filteredItems.length === 0 && <p className="text-gray-500">{tr('No items available yet.', '暂无商品。', '暫無商品。')}</p>}
               {filteredItems.map((item) => (
-                <div key={item.id} className="bg-gray-50 rounded-2xl border border-gray-100 hover:border-primary/30 hover:shadow-xl transition-all duration-500 flex flex-col group overflow-hidden">
-                  <div className="h-56 bg-gray-200 relative overflow-hidden">
+                <div key={item.id} className="catalog-item flex flex-col group overflow-hidden">
+                  <div className="catalog-image bg-gray-200 relative overflow-hidden">
                     {item.image_url && isManagedImage(item.image_url) ? <img src={item.image_url} alt={localName(item)} loading="lazy" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-in-out" /> : <div className="w-full h-full flex items-center justify-center bg-[#e5ebe3] text-[#829889]"><Gift size={42} strokeWidth={1} /></div>}
                     {!item.in_stock && (
                       <div className="absolute inset-0 bg-white/70 backdrop-blur-sm flex items-center justify-center">
@@ -362,7 +364,7 @@ const Souvenirs: React.FC = () => {
                         onClick={() => addToCart(item)}
                         disabled={!item.in_stock}
                         className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-bold transition-all ${
-                          item.in_stock ? 'bg-primary text-white hover:bg-blue-800 active:scale-95' : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                          item.in_stock ? 'bg-primary text-white hover:bg-primary/90 active:scale-95' : 'bg-gray-200 text-gray-400 cursor-not-allowed'
                         }`}
                       >
                         <ShoppingBag size={16} /> {t('add.cart')}
@@ -382,7 +384,7 @@ const Souvenirs: React.FC = () => {
           <button
             onClick={() => setShowCartModal(true)}
             aria-label={tr('Open cart', '打开购物车', '開啟購物車')}
-            className="bg-secondary text-white p-4 rounded-full shadow-lg hover:bg-yellow-600 transition-all duration-300 relative transform hover:scale-105"
+            className="bg-secondary text-white p-4 rounded-full shadow-lg hover:bg-primary transition-all duration-300 relative transform hover:scale-105"
           >
             <ShoppingCart size={24} />
             <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center border-2 border-white">
@@ -391,8 +393,8 @@ const Souvenirs: React.FC = () => {
           </button>
         )}
         <button
-          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-          className={`bg-primary text-white p-4 rounded-full shadow-lg hover:bg-blue-700 transition-all duration-300 transform ${showScrollTop ? 'translate-y-0 opacity-100' : 'translate-y-16 opacity-0 hidden'}`}
+          onClick={() => window.scrollTo({ top: 0, behavior: motion ? 'smooth' : 'instant' })}
+          className={`bg-primary text-white p-4 rounded-full shadow-lg hover:bg-primary/90 transition-all duration-300 transform ${showScrollTop ? 'translate-y-0 opacity-100' : 'translate-y-16 opacity-0 hidden'}`}
         >
           <ArrowUp size={24} />
         </button>
@@ -454,7 +456,7 @@ const Souvenirs: React.FC = () => {
                                 <input required type="text" aria-label={tr('Address', '地址', '地址')} value={orderAddress} onChange={e => setOrderAddress(e.target.value)} className="w-full border border-gray-200 rounded-lg p-3 h-10 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none" placeholder={tr('Enter your mailing address', '请输入完整邮寄地址', '請輸入完整郵寄地址')} />
                             </div>
 
-                            <div className="bg-blue-50 p-4 rounded-lg flex justify-between items-center border border-blue-100">
+                            <div className="bg-[#e9e5da] p-4 rounded-lg flex justify-between items-center border border-[#d8d8ce]">
                                 <span className="text-sm font-bold text-primary">{t('sumup')}</span>
                                 <span className="text-secondary font-serif font-bold text-2xl">¥{cartTotal}</span>
                             </div>
@@ -473,7 +475,7 @@ const Souvenirs: React.FC = () => {
                                 type="submit"
                                 disabled={!turnstileToken || isSubmitting}
                                 className={`w-full py-3 rounded-lg font-bold text-white transition-all transform ${
-                                    (!turnstileToken || isSubmitting) ? 'bg-gray-300 cursor-not-allowed' : 'bg-primary hover:bg-blue-800 active:scale-95 shadow-lg'
+                                    (!turnstileToken || isSubmitting) ? 'bg-gray-300 cursor-not-allowed' : 'bg-primary hover:bg-primary/90 active:scale-95 shadow-lg'
                                 }`}
                             >
                                 {isSubmitting ? tr('Submitting…', '提交中…', '送出中…') : t('sending.order') }
@@ -490,12 +492,12 @@ const Souvenirs: React.FC = () => {
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] flex items-center justify-center p-4 animate-in fade-in duration-200">
           <div role="dialog" aria-modal="true" aria-labelledby="order-success-title" className="bg-white rounded-2xl shadow-2xl max-w-md w-full relative overflow-y-auto max-h-[90vh]">
             {/* 頂部裝飾 */}
-            <div className="bg-gradient-to-r from-green-400 to-emerald-500 p-8 text-center">
+            <div className="bg-primary p-8 text-center">
               <div className="mx-auto w-16 h-16 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center mb-4 animate-bounce">
                 <CheckCircle2 size={36} className="text-white" />
               </div>
               <h2 id="order-success-title" className="text-2xl font-serif font-bold text-white mb-1">{tr('Order received!', '订单已提交！', '訂單已送出！')}</h2>
-              <p className="text-green-100 text-sm">{tr('We have received your order.', '我们已收到你的订单。', '我們已收到你的訂單。')}</p>
+              <p className="text-gray-200 text-sm">{tr('We have received your order.', '我们已收到你的订单。', '我們已收到你的訂單。')}</p>
             </div>
 
             {/* 訂單編號 */}
@@ -507,7 +509,7 @@ const Souvenirs: React.FC = () => {
                 </div>
                 <button
                   onClick={copyOrderId}
-                  className="flex-shrink-0 flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-primary bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors"
+                  className="flex-shrink-0 flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-primary bg-[#e9e5da] hover:bg-[#ded9cc] rounded-lg transition-colors"
                 >
                   {copiedOrderId ? <><CheckCircle size={14} /> {tr('Copied', '已复制', '已複製')}</> : <><Copy size={14} /> {tr('Copy', '复制', '複製')}</>}
                 </button>
@@ -557,7 +559,7 @@ const Souvenirs: React.FC = () => {
               {/* 關閉按鈕 */}
               <button
                 onClick={() => setShowSuccessModal(false)}
-                className="w-full py-3 bg-primary text-white rounded-xl font-bold hover:bg-blue-800 transition-all active:scale-95 shadow-lg"
+                className="w-full py-3 bg-primary text-white rounded-xl font-bold hover:bg-primary/90 transition-all active:scale-95 shadow-lg"
               >
                 {tr('Done', '完成', '完成')}
               </button>
